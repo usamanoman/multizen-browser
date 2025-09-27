@@ -1,6 +1,10 @@
 import mutations from "@renderer/store/mutations";
 import getters from "@renderer/store/getters";
-import { defaultHomePage, defaultUserAgent } from "@renderer/data/main";
+import {
+    defaultBrowserPreference,
+    defaultHomePage,
+    defaultUserAgent,
+} from "@renderer/data/main";
 import { v4 as uuid } from "uuid";
 
 const sessionId = uuid();
@@ -23,6 +27,7 @@ export default {
                 settings: {
                     homePage: defaultHomePage,
                     userAgent: defaultUserAgent,
+                    browser: defaultBrowserPreference,
                 },
                 id: sessionId,
                 currentTabIndex: 0,

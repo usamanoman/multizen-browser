@@ -1,3 +1,5 @@
+export type BrowserPreference = "duckduckgo" | "chrome";
+
 export interface ITab {
     id: string;
     type?: "settings";
@@ -12,6 +14,7 @@ export interface ISession {
     settings: {
         homePage: string;
         userAgent: string;
+        browser: BrowserPreference;
     };
     id: string;
     currentTabIndex: number;

@@ -26,6 +26,42 @@
                 </div>
                 <hr />
                 <div class="settings-block">
+                    <h4>Browser</h4>
+                    <div class="input-block">
+                        <select
+                            v-model="browserPreference"
+                            class="browser-select d-block"
+                            @change="saveBrowserPreference"
+                        >
+                            <option value="duckduckgo">DuckDuckGo Browser</option>
+                            <option value="chrome">Google Chrome</option>
+                        </select>
+                        <p
+                            v-if="browserPreference === 'chrome'"
+                            class="chrome-status"
+                        >
+                            <span v-if="checkingChrome"
+                                >Checking for Google Chrome...</span
+                            >
+                            <span v-else-if="chromeInstalled"
+                                >Google Chrome detected. Pages will open in your
+                                local Chrome browser.</span
+                            >
+                            <span v-else>
+                                Google Chrome was not found on this device.
+                                <button
+                                    type="button"
+                                    class="set-ua-btn install-chrome-btn"
+                                    @click="installChrome"
+                                >
+                                    <i class="fa fa-download" /> Install Chrome
+                                </button>
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                <hr />
+                <div class="settings-block">
                     <h4>User Agent</h4>
                     <div class="input-block">
                         <div class="d-flex">
@@ -104,8 +140,10 @@
 </template>
 
 <script lang="ts">
+import { ipcRenderer } from "electron";
 import { mapGetters, mapMutations } from "vuex";
 import userAgents from "@renderer/user-agents/useragents.json";
+import { defaultBrowserPreference } from "@renderer/data/main";
 
 const defaultUserAgent = window.navigator.userAgent;
 
@@ -115,6 +153,9 @@ export default {
             userAgent: "",
             homePage: "",
             defaultUserAgent,
+            browserPreference: defaultBrowserPreference,
+            chromeInstalled: null as null | boolean,
+            checkingChrome: false,
         };
     },
 
@@ -125,6 +166,49 @@ export default {
     created() {
         this.userAgent = this.currentSession.settings.userAgent;
         this.homePage = this.currentSession.settings.homePage;
+        const sessionBrowser =
+            this.currentSession.settings.browser || defaultBrowserPreference;
+
+        this.browserPreference = sessionBrowser;
+        if (!this.currentSession.settings.browser) {
+            this.updateSessionSetting({
+                sessionIndex: this.currentSessionIndex,
+                k: "browser",
+                v: sessionBrowser,
+            });
+        }
+        if (this.browserPreference === "chrome") {
+            this.checkChromeAvailability();
+        }
+    },
+
+    watch: {
+        currentSession(session) {
+            if (!session) {
+                return;
+            }
+
+            this.userAgent = session.settings.userAgent;
+            this.homePage = session.settings.homePage;
+            const sessionBrowser =
+                session.settings.browser || defaultBrowserPreference;
+            this.browserPreference = sessionBrowser;
+
+            if (!session.settings.browser) {
+                this.updateSessionSetting({
+                    sessionIndex: this.currentSessionIndex,
+                    k: "browser",
+                    v: sessionBrowser,
+                });
+            }
+
+            if (this.browserPreference === "chrome") {
+                this.checkChromeAvailability();
+            } else {
+                this.chromeInstalled = null;
+                this.checkingChrome = false;
+            }
+        },
     },
 
     methods: {
@@ -137,6 +221,25 @@ export default {
                 k: "homePage",
                 v: this.homePage,
             });
+        },
+
+        async saveBrowserPreference() {
+            const preference =
+                this.browserPreference || defaultBrowserPreference;
+            this.browserPreference = preference;
+
+            this.updateSessionSetting({
+                sessionIndex: this.currentSessionIndex,
+                k: "browser",
+                v: preference,
+            });
+
+            if (preference === "chrome") {
+                await this.checkChromeAvailability();
+            } else {
+                this.chromeInstalled = null;
+                this.checkingChrome = false;
+            }
         },
 
         setDefaultUserAgent() {
@@ -157,8 +260,30 @@ export default {
             });
         },
 
+        async checkChromeAvailability() {
+            this.chromeInstalled = null;
+            this.checkingChrome = true;
+
+            try {
+                const result = await ipcRenderer.invoke("browser:check-chrome");
+                this.chromeInstalled = Boolean(result?.installed);
+            } catch (error) {
+                this.chromeInstalled = false;
+            } finally {
+                this.checkingChrome = false;
+            }
+        },
+
         closeSession() {
             this.removeSession({ sessionIndex: this.currentSessionIndex });
+        },
+
+        async installChrome() {
+            try {
+                await ipcRenderer.invoke("browser:install-chrome");
+            } catch (error) {
+                console.error("Failed to open Chrome download page", error);
+            }
         },
 
         urlify(url) {
@@ -261,6 +386,20 @@ hr {
         }
     }
 
+    select {
+        width: 100%;
+        padding: 6px;
+        outline: 0;
+        border: 2px solid #d9d9ff;
+        border-radius: 3px;
+        background-color: white;
+        transition: 0.3s ease;
+
+        &:focus {
+            border: 2px solid #7575dc;
+        }
+    }
+
     .radio-block {
         margin: 7px 0;
         display: block;
@@ -302,5 +441,15 @@ hr {
     i {
         transition: 0.5s ease;
     }
+}
+
+.chrome-status {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #27262e;
+}
+
+.install-chrome-btn {
+    margin-left: 8px;
 }
 </style>
