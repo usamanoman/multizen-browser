@@ -140,12 +140,15 @@
 </template>
 
 <script lang="ts">
-import { ipcRenderer } from "electron";
 import { mapGetters, mapMutations } from "vuex";
 import userAgents from "@renderer/user-agents/useragents.json";
 import { defaultBrowserPreference } from "@renderer/data/main";
 
 const defaultUserAgent = window.navigator.userAgent;
+
+function getIpcRenderer() {
+    return window.electron?.ipcRenderer;
+}
 
 export default {
     data() {
@@ -265,6 +268,11 @@ export default {
             this.checkingChrome = true;
 
             try {
+                const ipcRenderer = getIpcRenderer();
+                if (!ipcRenderer) {
+                    throw new Error("IPC renderer bridge is unavailable");
+                }
+
                 const result = await ipcRenderer.invoke("browser:check-chrome");
                 this.chromeInstalled = Boolean(result?.installed);
             } catch (error) {
@@ -280,6 +288,11 @@ export default {
 
         async installChrome() {
             try {
+                const ipcRenderer = getIpcRenderer();
+                if (!ipcRenderer) {
+                    throw new Error("IPC renderer bridge is unavailable");
+                }
+
                 await ipcRenderer.invoke("browser:install-chrome");
             } catch (error) {
                 console.error("Failed to open Chrome download page", error);

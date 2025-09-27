@@ -81,11 +81,14 @@
 
 <script lang="ts">
 import Url from "./../controls/url.vue";
-import { ipcRenderer } from "electron";
 import type { WebviewTag } from "electron";
 import get from "lodash/get";
 import { mapGetters, mapMutations } from "vuex";
 import { defaultBrowserPreference } from "@renderer/data/main";
+
+function getIpcRenderer() {
+    return window.electron?.ipcRenderer;
+}
 
 const events = {
     "did-finish-load": "didFinishLoad",
@@ -187,6 +190,11 @@ export default {
             this.checkingChrome = true;
 
             try {
+                const ipcRenderer = getIpcRenderer();
+                if (!ipcRenderer) {
+                    throw new Error("IPC renderer bridge is unavailable");
+                }
+
                 const result = await ipcRenderer.invoke("browser:check-chrome");
                 this.chromeInstalled = Boolean(result?.installed);
             } catch (error) {
@@ -207,6 +215,11 @@ export default {
             this.lastLaunchedChromeUrl = targetUrl;
 
             try {
+                const ipcRenderer = getIpcRenderer();
+                if (!ipcRenderer) {
+                    throw new Error("IPC renderer bridge is unavailable");
+                }
+
                 const result = await ipcRenderer.invoke("browser:launch-chrome", {
                     url: targetUrl,
                 });
@@ -231,6 +244,11 @@ export default {
 
         async installChrome() {
             try {
+                const ipcRenderer = getIpcRenderer();
+                if (!ipcRenderer) {
+                    throw new Error("IPC renderer bridge is unavailable");
+                }
+
                 await ipcRenderer.invoke("browser:install-chrome");
             } catch (error) {
                 console.error("Failed to open Chrome download page", error);
