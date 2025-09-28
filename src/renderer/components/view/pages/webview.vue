@@ -130,19 +130,15 @@ export default {
     },
 
     watch: {
-        "currentSession.settings.browser"(
-            browser: string | undefined,
-            previousBrowser: string | undefined,
-        ) {
-            if (browser === previousBrowser) {
-                return;
-            }
-
-            if (browser === "chrome") {
-                this.switchToChromeMode();
-            } else if (previousBrowser === "chrome") {
-                this.switchToWebviewMode();
-            }
+        isChromeBrowser: {
+            immediate: true,
+            handler(isChrome: boolean, wasChrome: boolean | undefined) {
+                if (isChrome) {
+                    this.switchToChromeMode();
+                } else if (wasChrome) {
+                    this.switchToWebviewMode();
+                }
+            },
         },
 
         currentTabUrl(url: string | null) {
@@ -170,9 +166,7 @@ export default {
 
     mounted() {
         this.$nextTick(() => {
-            if (this.isChromeBrowser) {
-                this.switchToChromeMode();
-            } else {
+            if (!this.isChromeBrowser) {
                 this.initView();
             }
         });
@@ -277,9 +271,14 @@ export default {
 
         navigate(url: string) {
             if (this.isChromeBrowser) {
+                const session = this.currentSession;
+                if (!session) {
+                    return;
+                }
+
                 this.updateTab({
                     sessionIndex: this.currentSessionIndex,
-                    tabIndex: this.currentSession.currentTabIndex,
+                    tabIndex: session.currentTabIndex,
                     k: "url",
                     v: url,
                 });
@@ -301,18 +300,28 @@ export default {
         },
 
         didNavigate(e) {
+            const session = this.currentSession;
+            if (!session) {
+                return;
+            }
+
             this.updateTab({
                 sessionIndex: this.currentSessionIndex,
-                tabIndex: this.currentSession.currentTabIndex,
+                tabIndex: session.currentTabIndex,
                 k: "url",
                 v: e.url,
             });
         },
 
         pageFaviconUpdated(r) {
+            const session = this.currentSession;
+            if (!session) {
+                return;
+            }
+
             this.updateTab({
                 sessionIndex: this.currentSessionIndex,
-                tabIndex: this.currentSession.currentTabIndex,
+                tabIndex: session.currentTabIndex,
                 k: "favicon",
                 v: get(r, "favicons.0", null),
             });
@@ -336,9 +345,14 @@ export default {
         didStopLoading() {
             this.loading = false;
 
+            const session = this.currentSession;
+            if (!session) {
+                return;
+            }
+
             this.updateTab({
                 sessionIndex: this.currentSessionIndex,
-                tabIndex: this.currentSession.currentTabIndex,
+                tabIndex: session.currentTabIndex,
                 k: "title",
                 v: this.view?.getTitle(),
             });

@@ -166,51 +166,36 @@ export default {
         ...mapGetters("sessions", ["currentSession", "currentSessionIndex"]),
     },
 
-    created() {
-        this.userAgent = this.currentSession.settings.userAgent;
-        this.homePage = this.currentSession.settings.homePage;
-        const sessionBrowser =
-            this.currentSession.settings.browser || defaultBrowserPreference;
-
-        this.browserPreference = sessionBrowser;
-        if (!this.currentSession.settings.browser) {
-            this.updateSessionSetting({
-                sessionIndex: this.currentSessionIndex,
-                k: "browser",
-                v: sessionBrowser,
-            });
-        }
-        if (this.browserPreference === "chrome") {
-            this.checkChromeAvailability();
-        }
-    },
-
     watch: {
-        currentSession(session) {
-            if (!session) {
-                return;
-            }
+        currentSession: {
+            immediate: true,
+            handler(session) {
+                if (!session?.settings) {
+                    return;
+                }
 
-            this.userAgent = session.settings.userAgent;
-            this.homePage = session.settings.homePage;
-            const sessionBrowser =
-                session.settings.browser || defaultBrowserPreference;
-            this.browserPreference = sessionBrowser;
+                this.userAgent = session.settings.userAgent;
+                this.homePage = session.settings.homePage;
 
-            if (!session.settings.browser) {
-                this.updateSessionSetting({
-                    sessionIndex: this.currentSessionIndex,
-                    k: "browser",
-                    v: sessionBrowser,
-                });
-            }
+                const sessionBrowser =
+                    session.settings.browser || defaultBrowserPreference;
+                this.browserPreference = sessionBrowser;
 
-            if (this.browserPreference === "chrome") {
-                this.checkChromeAvailability();
-            } else {
-                this.chromeInstalled = null;
-                this.checkingChrome = false;
-            }
+                if (!session.settings.browser) {
+                    this.updateSessionSetting({
+                        sessionIndex: this.currentSessionIndex,
+                        k: "browser",
+                        v: sessionBrowser,
+                    });
+                }
+
+                if (sessionBrowser === "chrome") {
+                    this.checkChromeAvailability();
+                } else {
+                    this.chromeInstalled = null;
+                    this.checkingChrome = false;
+                }
+            },
         },
     },
 
