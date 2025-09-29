@@ -1,3 +1,5 @@
+import { DEFAULT_LANGUAGE } from "../shared/constants";
+
 export const defaultHomePage = "https://browserscan.net";
 
 const fallbackUserAgent =
@@ -26,3 +28,5 @@ export const defaultUserAgent =
     ) || fallbackUserAgent;
 
 export const defaultBrowserPreference = "chrome";
+
+export const defaultLanguage = DEFAULT_LANGUAGE;

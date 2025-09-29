@@ -59,6 +59,30 @@
                 </div>
                 <hr />
                 <div class="settings-block">
+                    <h4>Browser Language</h4>
+                    <div class="input-block">
+                        <select
+                            v-model="language"
+                            class="d-block"
+                            @change="persistLanguage"
+                        >
+                            <option
+                                v-for="option in languageOptions"
+                                :key="option.value"
+                                :value="option.value"
+                            >
+                                {{ option.label }}
+                            </option>
+                        </select>
+                        <p class="field-hint">
+                            Sets the browser language and Accept-Language header
+                            for this session.
+                        </p>
+                    </div>
+                </div>
+                <hr />
+
+                <div class="settings-block">
                     <h4>User Agent</h4>
                     <div class="input-block">
                         <input
@@ -129,8 +153,10 @@ import { mapGetters, mapMutations } from "vuex";
 import {
     defaultBrowserPreference,
     defaultHomePage,
+    defaultLanguage,
     defaultUserAgent,
 } from "@renderer/data/main";
+import { configureSessionLanguage } from "@renderer/ipc/browser";
 
 function getIpcRenderer() {
     return window.electron?.ipcRenderer;
@@ -143,6 +169,13 @@ export default {
             browserPreference: defaultBrowserPreference,
             chromeInstalled: null as null | boolean,
             checkingChrome: false,
+            language: defaultLanguage,
+            languageOptions: [
+                { value: "en-US", label: "English (United States)" },
+                { value: "en-GB", label: "English (United Kingdom)" },
+                { value: "en-CA", label: "English (Canada)" },
+                { value: "en-AU", label: "English (Australia)" },
+            ],
         };
     },
 
@@ -194,6 +227,21 @@ export default {
                     });
                 }
 
+                const resolvedLanguage = this.normalizeLanguage(
+                    session.settings.language,
+                );
+                this.language = resolvedLanguage;
+
+                if (session.settings.language !== resolvedLanguage) {
+                    this.updateSessionSetting({
+                        sessionIndex: this.currentSessionIndex,
+                        k: "language",
+                        v: resolvedLanguage,
+                    });
+                }
+
+                void this.configureLanguage(resolvedLanguage);
+
                 if (this.browserPreference === "chrome") {
                     this.checkChromeAvailability();
                 } else {
@@ -226,6 +274,43 @@ export default {
                     v: nextHomePage,
                 });
             }
+        },
+
+        normalizeLanguage(value?: string | null): string {
+            const candidate = typeof value === "string" ? value.trim() : "";
+
+            if (!candidate) {
+                return defaultLanguage;
+            }
+
+            return candidate;
+        },
+
+        async configureLanguage(language: string) {
+            const sessionId = this.currentSession?.id ?? null;
+            await configureSessionLanguage(sessionId, language);
+        },
+
+        async persistLanguage() {
+            if (!this.currentSession) {
+                return;
+            }
+
+            const normalized = this.normalizeLanguage(this.language);
+
+            if (this.language !== normalized) {
+                this.language = normalized;
+            }
+
+            if (this.currentSession.settings?.language !== normalized) {
+                this.updateSessionSetting({
+                    sessionIndex: this.currentSessionIndex,
+                    k: "language",
+                    v: normalized,
+                });
+            }
+
+            await this.configureLanguage(normalized);
         },
 
         async checkChromeAvailability() {

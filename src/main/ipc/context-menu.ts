@@ -13,6 +13,7 @@ type ContextMenuRequest = {
     params?: ContextMenuParams | null;
     sessionId?: string | null;
     chromeInstalled?: boolean | null;
+    language?: string | null;
 };
 
 function buildNavigationItems(target: Electron.WebContents) {
@@ -96,6 +97,7 @@ function buildLinkItems(
         click: () => {
             const result = launchChrome(linkUrl, {
                 sessionId: request.sessionId ?? undefined,
+                language: request.language ?? undefined,
             });
 
             host?.send("webview:chrome-availability", {

@@ -66,6 +66,8 @@ import Url from "./../controls/url.vue";
 import type { ContextMenuParams, WebviewTag } from "electron";
 import get from "lodash/get";
 import { mapGetters, mapMutations } from "vuex";
+import { defaultLanguage } from "@renderer/data/main";
+import { configureSessionLanguage } from "@renderer/ipc/browser";
 
 function getIpcRenderer() {
     return window.electron?.ipcRenderer;
@@ -128,6 +130,13 @@ export default {
                 }
             },
         },
+        "currentSession.settings.language": {
+            immediate: true,
+            handler(language: string | null | undefined) {
+                const normalized = this.normalizeLanguage(language);
+                void this.configureLanguage(normalized);
+            },
+        },
     },
 
     mounted() {
@@ -154,6 +163,21 @@ export default {
 
     methods: {
         ...mapMutations("sessions", ["updateTab", "addTab"]),
+
+        normalizeLanguage(value?: string | null): string {
+            const candidate = typeof value === "string" ? value.trim() : "";
+
+            if (!candidate) {
+                return defaultLanguage;
+            }
+
+            return candidate;
+        },
+
+        async configureLanguage(language: string) {
+            const sessionId = this.currentSession?.id ?? null;
+            await configureSessionLanguage(sessionId, language);
+        },
 
         async checkChromeAvailability() {
             this.chromeInstalled = null;
@@ -192,6 +216,10 @@ export default {
             this.removeEventListeners();
             this.view = null;
             this.loading = false;
+            const language = this.normalizeLanguage(
+                this.currentSession?.settings?.language,
+            );
+            void this.configureLanguage(language);
             this.checkChromeAvailability();
         },
 
@@ -329,6 +357,7 @@ export default {
                 params,
                 sessionId: this.currentSession?.id ?? null,
                 chromeInstalled: this.chromeInstalled,
+                language: this.currentSession?.settings?.language ?? null,
             });
         },
 

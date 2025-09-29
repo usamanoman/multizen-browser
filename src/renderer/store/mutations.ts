@@ -5,6 +5,7 @@ import { v4 as uuid } from "uuid";
 import {
     defaultBrowserPreference,
     defaultHomePage,
+    defaultLanguage,
     defaultUserAgent,
 } from "@renderer/data/main";
 
@@ -35,6 +36,7 @@ const mutations: MutationTree<IState> = {
                 homePage: defaultHomePage,
                 userAgent: defaultUserAgent,
                 browser: defaultBrowserPreference,
+                language: defaultLanguage,
             },
         });
         s.currentSessionIndex = s.sessions.length - 1;

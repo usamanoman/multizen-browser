@@ -15,6 +15,7 @@ export interface ISession {
         homePage: string;
         userAgent: string;
         browser: BrowserPreference;
+        language: string;
     };
     id: string;
     currentTabIndex: number;
