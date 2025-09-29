@@ -1,82 +1,62 @@
 <template>
     <div class="view-container">
-        <template v-if="!isChromeBrowser">
-            <div v-if="view" class="controls-bar">
-                <button
-                    class="controls-button"
-                    @click="view.canGoBack() ? view.goBack() : null"
-                >
-                    <i class="fa fa-arrow-left" />
-                </button>
+        <div v-if="view" class="controls-bar">
+            <button
+                class="controls-button"
+                @click="view.canGoBack() ? view.goBack() : null"
+            >
+                <i class="fa fa-arrow-left" />
+            </button>
 
-                <button
-                    class="controls-button"
-                    @click="view.canGoForward() ? view.goForward() : null"
-                >
-                    <i class="fa fa-arrow-right" />
-                </button>
+            <button
+                class="controls-button"
+                @click="view.canGoForward() ? view.goForward() : null"
+            >
+                <i class="fa fa-arrow-right" />
+            </button>
 
-                <button
-                    class="controls-button"
-                    @click="loading ? view.stop() : view.reload()"
-                >
-                    <i :class="!loading ? 'fa fa-refresh' : 'fa fa-times'" />
-                </button>
+            <button
+                class="controls-button"
+                @click="loading ? view.stop() : view.reload()"
+            >
+                <i :class="!loading ? 'fa fa-refresh' : 'fa fa-times'" />
+            </button>
 
-                <url :value="currentTab.url" @navigate="navigate($event)" />
-            </div>
+            <url :value="currentTab.url" @navigate="navigate($event)" />
+        </div>
 
-            <div class="view-container-content">
-                <webview
-                    v-show="currentTab"
-                    ref="view"
-                    :key="currentTab.session"
-                    autosize
-                    class="webview"
-                    :src="currentTab.url"
-                    :partition="`persist:${currentTab.session}`"
-                    :useragent="currentSession.settings.userAgent"
-                    @dom-ready="loaded"
-                />
-            </div>
-        </template>
-
-        <template v-else>
-            <div class="chrome-controls">
-                <div class="chrome-url">
-                    <url
-                        :value="currentTabUrl || ''"
-                        @navigate="navigate($event)"
-                    />
-                </div>
+        <div v-if="isChromeBrowser" class="chrome-info">
+            <p v-if="checkingChrome">Checking for Google Chrome...</p>
+            <p v-else-if="chromeInstalled">
+                Google Chrome detected. Links from this session open in a
+                dedicated Chrome profile, keeping your personal browser data
+                separate.
+            </p>
+            <div v-else>
+                <p>Google Chrome is not installed on this device.</p>
                 <button
                     type="button"
-                    class="chrome-open-btn"
-                    :disabled="!currentTabUrl"
-                    @click="openCurrentTabInChrome"
+                    class="chrome-install-btn"
+                    @click="installChrome"
                 >
-                    <i class="fa fa-external-link" /> Open in Chrome
+                    <i class="fa fa-download" /> Install Chrome
                 </button>
             </div>
-            <div class="chrome-info">
-                <p v-if="checkingChrome">Checking for Google Chrome...</p>
-                <p v-else-if="chromeInstalled">
-                    Google Chrome detected. Links from this session open in a
-                    dedicated Chrome profile, keeping your personal browser
-                    data separate.
-                </p>
-                <div v-else>
-                    <p>Google Chrome is not installed on this device.</p>
-                    <button
-                        type="button"
-                        class="chrome-install-btn"
-                        @click="installChrome"
-                    >
-                        <i class="fa fa-download" /> Install Chrome
-                    </button>
-                </div>
-            </div>
-        </template>
+        </div>
+
+        <div class="view-container-content">
+            <webview
+                v-show="currentTab"
+                ref="view"
+                :key="webviewKey"
+                autosize
+                class="webview"
+                :src="currentTab.url"
+                :partition="webviewPartition"
+                :useragent="currentSession.settings.userAgent"
+                @dom-ready="loaded"
+            />
+        </div>
     </div>
 </template>
 
@@ -110,7 +90,6 @@ export default {
             loading: false,
             chromeInstalled: null as null | boolean,
             checkingChrome: false,
-            lastLaunchedChromeUrl: null as string | null,
         };
     },
 
@@ -120,13 +99,28 @@ export default {
             "currentTab",
             "currentSessionIndex",
         ]),
-        currentTabUrl(): string | null {
-            return this.currentTab?.url ?? null;
-        },
         isChromeBrowser(): boolean {
             const browser =
                 this.currentSession?.settings?.browser ?? defaultBrowserPreference;
             return browser === "chrome";
+        },
+        webviewPartition(): string | null {
+            const sessionId = this.currentTab?.session;
+            if (!sessionId) {
+                return this.isChromeBrowser
+                    ? "persist:chrome-default"
+                    : "persist:default";
+            }
+
+            if (this.isChromeBrowser) {
+                return `persist:chrome-${sessionId}`;
+            }
+
+            return `persist:${sessionId}`;
+        },
+        webviewKey(): string {
+            const sessionId = this.currentTab?.session ?? "unknown";
+            return `${sessionId}-${this.isChromeBrowser ? "chrome" : "duck"}`;
         },
     },
 
@@ -141,36 +135,6 @@ export default {
                 }
             },
         },
-
-        currentTabUrl(url: string | null) {
-            if (
-                this.isChromeBrowser &&
-                this.chromeInstalled &&
-                url &&
-                url !== this.lastLaunchedChromeUrl
-            ) {
-                this.openInChrome(url);
-            }
-        },
-
-        chromeInstalled(installed: boolean | null) {
-            if (
-                installed &&
-                this.isChromeBrowser &&
-                this.currentTabUrl &&
-                this.currentTabUrl !== this.lastLaunchedChromeUrl
-            ) {
-                this.openInChrome(this.currentTabUrl);
-            }
-        },
-    },
-
-    mounted() {
-        this.$nextTick(() => {
-            if (!this.isChromeBrowser) {
-                this.initView();
-            }
-        });
     },
 
     beforeUnmount() {
@@ -200,44 +164,6 @@ export default {
             }
         },
 
-        async openInChrome(url: string) {
-            const targetUrl = (url || "").trim();
-
-            if (!targetUrl || targetUrl === this.lastLaunchedChromeUrl) {
-                return;
-            }
-
-            this.lastLaunchedChromeUrl = targetUrl;
-
-            try {
-                const ipcRenderer = getIpcRenderer();
-                if (!ipcRenderer) {
-                    throw new Error("IPC renderer bridge is unavailable");
-                }
-
-                const result = await ipcRenderer.invoke("browser:launch-chrome", {
-                    url: targetUrl,
-                    sessionId: this.currentSession?.id,
-                });
-
-                this.chromeInstalled = Boolean(result?.installed);
-
-                if (!this.chromeInstalled) {
-                    this.lastLaunchedChromeUrl = null;
-                }
-            } catch (error) {
-                console.error("Failed to launch Chrome", error);
-                this.chromeInstalled = false;
-                this.lastLaunchedChromeUrl = null;
-            }
-        },
-
-        openCurrentTabInChrome() {
-            if (this.currentTab?.url) {
-                this.openInChrome(this.currentTab.url);
-            }
-        },
-
         async installChrome() {
             try {
                 const ipcRenderer = getIpcRenderer();
@@ -255,39 +181,19 @@ export default {
             this.removeEventListeners();
             this.view = null;
             this.loading = false;
-            this.lastLaunchedChromeUrl = null;
             this.checkChromeAvailability();
         },
 
         switchToWebviewMode() {
-            this.lastLaunchedChromeUrl = null;
+            this.removeEventListeners();
+            this.view = null;
+            this.loading = false;
             this.chromeInstalled = null;
             this.checkingChrome = false;
 
-            this.$nextTick(() => {
-                if (!this.isChromeBrowser) {
-                    this.initView();
-                }
-            });
         },
 
         navigate(url: string) {
-            if (this.isChromeBrowser) {
-                const session = this.currentSession;
-                if (!session) {
-                    return;
-                }
-
-                this.updateTab({
-                    sessionIndex: this.currentSessionIndex,
-                    tabIndex: session.currentTabIndex,
-                    k: "url",
-                    v: url,
-                });
-                this.openInChrome(url);
-                return;
-            }
-
             if (url !== this.view?.getURL()) {
                 this.view?.loadURL(url);
             }
@@ -334,10 +240,6 @@ export default {
         },
 
         loaded() {
-            if (this.isChromeBrowser) {
-                return;
-            }
-
             this.view = this.$refs.view as WebviewTag;
             Object.keys(events).forEach((event) =>
                 this.view?.addEventListener(event, this[events[event]]),
@@ -362,17 +264,6 @@ export default {
 
         didFailLoad(e) {
             console.info("Load failed with error code: ", e.errorCode);
-        },
-
-        initView() {
-            if (this.isChromeBrowser) {
-                return;
-            }
-
-            this.view = this.$refs.view as WebviewTag;
-            Object.keys(events).forEach((event) =>
-                this.view?.addEventListener(event, this[events[event]]),
-            );
         },
 
         removeEventListeners() {
@@ -448,20 +339,6 @@ export default {
     }
 }
 
-.chrome-controls {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px;
-    background-color: #1d1c3b;
-    border-bottom: 1px solid #1d224a;
-}
-
-.chrome-url {
-    flex: 1;
-}
-
-.chrome-open-btn,
 .chrome-install-btn {
     display: inline-flex;
     align-items: center;
@@ -478,12 +355,6 @@ export default {
     transition: background-color 0.2s ease, opacity 0.2s ease;
 }
 
-.chrome-open-btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-.chrome-open-btn:not(:disabled):hover,
 .chrome-install-btn:hover {
     background-color: #9baed7;
 }
@@ -496,6 +367,9 @@ export default {
     gap: 12px;
     color: #6c6969;
     font-size: 14px;
+    background-color: #15132b;
+    border-bottom: 1px solid #1d224a;
+    width: 100%;
 }
 
 .chrome-info p {
