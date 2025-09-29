@@ -224,8 +224,26 @@ export default {
         },
 
         navigate(url: string) {
-            if (url !== this.view?.getURL()) {
-                this.view?.loadURL(url);
+            if (url === this.view?.getURL()) {
+                return;
+            }
+
+            const promise = this.view?.loadURL(url);
+
+            if (promise && typeof promise.catch === "function") {
+                promise.catch((error: Error & { code?: number | string; errno?: number | string }) => {
+                    const errorCode = error?.errno ?? error?.code;
+
+                    if (
+                        errorCode === -3 ||
+                        errorCode === "ERR_ABORTED" ||
+                        error?.message?.includes?.("-3")
+                    ) {
+                        return;
+                    }
+
+                    console.warn("Failed to navigate webview", error);
+                });
             }
         },
 
