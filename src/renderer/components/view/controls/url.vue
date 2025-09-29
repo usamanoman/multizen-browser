@@ -50,6 +50,10 @@ export default {
                 return "";
             }
 
+            if (this.looksLikeSearchQuery(trimmed)) {
+                return `https://www.google.com/search?q=${encodeURIComponent(trimmed)}`;
+            }
+
             const uri = URI(trimmed);
             const protocol = uri.protocol();
 
@@ -58,6 +62,41 @@ export default {
             }
 
             return uri.toString();
+        },
+
+        looksLikeSearchQuery(value: string) {
+            if (!value) {
+                return true;
+            }
+
+            if (/\s/.test(value)) {
+                return true;
+            }
+
+            const lowerValue = value.toLowerCase();
+
+            const hasProtocol = /^[a-z][a-z0-9+.-]*:\/\//.test(lowerValue);
+            if (hasProtocol) {
+                return false;
+            }
+
+            if (lowerValue.startsWith("localhost")) {
+                return false;
+            }
+
+            if (/^(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?(\/.*)?$/.test(lowerValue)) {
+                return false;
+            }
+
+            if (/^[\w-]+(\.[\w-]+)+(?:[:\/].*)?$/.test(lowerValue)) {
+                return false;
+            }
+
+            if (/^www\./.test(lowerValue)) {
+                return false;
+            }
+
+            return true;
         },
 
         onFocus(event) {

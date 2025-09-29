@@ -3,6 +3,7 @@ import getters from "@renderer/store/getters";
 import {
     defaultBrowserPreference,
     defaultHomePage,
+    defaultLanguage,
     defaultUserAgent,
 } from "@renderer/data/main";
 import { v4 as uuid } from "uuid";
@@ -28,6 +29,7 @@ export default {
                     homePage: defaultHomePage,
                     userAgent: defaultUserAgent,
                     browser: defaultBrowserPreference,
+                    language: defaultLanguage,
                 },
                 id: sessionId,
                 currentTabIndex: 0,

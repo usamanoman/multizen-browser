@@ -1,8 +1,13 @@
-import { existsSync, mkdirSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { spawn, spawnSync } from "child_process";
 import { app, shell } from "electron";
 import logger from "electron-log";
+import {
+    CHROME_EXTENSION_ID,
+    CHROME_EXTENSION_UPDATE_URL,
+    DEFAULT_LANGUAGE,
+} from "../shared/constants";
 
 type ChromeCheckResult = {
     installed: boolean;
@@ -161,8 +166,55 @@ function getProfileDirectory(sessionId?: string): string | null {
     }
 }
 
+function ensureExtensionProvisioned(profileDirectory: string): void {
+    try {
+        const externalDir = join(profileDirectory, "External Extensions");
+        ensureDirectory(externalDir);
+
+        const descriptorPath = join(
+            externalDir,
+            `${CHROME_EXTENSION_ID}.json`,
+        );
+
+        let shouldWriteDescriptor = true;
+
+        if (existsSync(descriptorPath)) {
+            try {
+                const raw = readFileSync(descriptorPath, "utf-8");
+                const currentDescriptor = JSON.parse(raw);
+                if (
+                    currentDescriptor?.external_update_url ===
+                    CHROME_EXTENSION_UPDATE_URL
+                ) {
+                    shouldWriteDescriptor = false;
+                }
+            } catch (error) {
+                logger.warn(
+                    "Failed to parse existing Chrome extension descriptor",
+                    error,
+                );
+            }
+        }
+
+        if (!shouldWriteDescriptor) {
+            return;
+        }
+
+        const descriptor = {
+            external_update_url: CHROME_EXTENSION_UPDATE_URL,
+        };
+
+        writeFileSync(descriptorPath, JSON.stringify(descriptor, null, 2), {
+            encoding: "utf-8",
+        });
+    } catch (error) {
+        logger.warn("Failed to provision Chrome extension", error);
+    }
+}
+
 type LaunchChromeOptions = {
     sessionId?: string;
+    language?: string | null;
 };
 
 export function launchChrome(
@@ -181,7 +233,15 @@ export function launchChrome(
     if (profileDirectory) {
         args.push(`--user-data-dir=${profileDirectory}`);
         args.push("--profile-directory=Default");
+        ensureExtensionProvisioned(profileDirectory);
     }
+
+    const normalizedLanguage =
+        typeof options.language === "string" && options.language.trim()
+            ? options.language.trim()
+            : DEFAULT_LANGUAGE;
+
+    args.push(`--lang=${normalizedLanguage}`);
 
     args.push("--new-window");
     args.push(url);
