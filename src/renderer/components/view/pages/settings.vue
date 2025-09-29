@@ -15,10 +15,11 @@
                     <h4>Home page</h4>
                     <div class="input-block">
                         <input
-                            :value="homePage"
+                            v-model.trim="homePage"
                             class="d-block"
                             type="url"
-                            readonly
+                            @blur="persistHomePage"
+                            @keyup.enter="persistHomePage"
                         />
                     </div>
                 </div>
@@ -160,14 +161,15 @@ export default {
                     return;
                 }
 
-                const enforcedHomePage = defaultHomePage;
-                this.homePage = enforcedHomePage;
+                const sessionHomePage = session.settings.homePage?.trim();
+                const resolvedHomePage = sessionHomePage || defaultHomePage;
+                this.homePage = resolvedHomePage;
 
-                if (session.settings.homePage !== enforcedHomePage) {
+                if (session.settings.homePage !== resolvedHomePage) {
                     this.updateSessionSetting({
                         sessionIndex: this.currentSessionIndex,
                         k: "homePage",
-                        v: enforcedHomePage,
+                        v: resolvedHomePage,
                     });
                 }
 
@@ -204,6 +206,27 @@ export default {
 
     methods: {
         ...mapMutations("sessions", ["updateSessionSetting", "removeSession"]),
+
+        persistHomePage() {
+            if (!this.currentSession) {
+                return;
+            }
+
+            const trimmedHomePage = this.homePage?.trim();
+            const nextHomePage = trimmedHomePage || defaultHomePage;
+
+            if (this.homePage !== nextHomePage) {
+                this.homePage = nextHomePage;
+            }
+
+            if (this.currentSession.settings?.homePage !== nextHomePage) {
+                this.updateSessionSetting({
+                    sessionIndex: this.currentSessionIndex,
+                    k: "homePage",
+                    v: nextHomePage,
+                });
+            }
+        },
 
         async checkChromeAvailability() {
             if (this.browserPreference !== "chrome") {
