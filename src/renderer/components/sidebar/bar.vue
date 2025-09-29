@@ -59,11 +59,12 @@ export default {
 <style scoped lang="scss">
 .sidebar-container {
     width: 56px;
-    background: #11101f;
+    background: #ffd7a3;
     height: 100%;
-    color: white;
+    color: #3f2a08;
     display: flex;
     flex-direction: column;
     user-select: none;
+    box-shadow: 4px 0 12px rgba(63, 42, 8, 0.12);
 }
 </style>

@@ -3,7 +3,7 @@ import { version } from "../../package.json";
 
 export default {
     main: {
-        appName: "MultiZen Browser",
+        appName: "ReachOwl Runner",
         isDev: process.env.NODE_ENV === "development",
         appVersion: version || "",
     },

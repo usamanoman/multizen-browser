@@ -3,9 +3,9 @@ console.time("build-time");
 const builder = require("electron-builder");
 
 const options = {
-    productName: "MultiZen Browser",
-    appId: "com.imbacorp.multizen",
-    artifactName: "MultiZen-Browser_${arch}_${os}.${ext}",
+    productName: "ReachOwl Runner",
+    appId: "com.reachowl.runner",
+    artifactName: "ReachOwl-Runner_${arch}_${os}.${ext}",
     compression: "normal", // "store” | “normal” | "maximum". - For testing builds, use 'store' to reduce build time significantly.
     removePackageScripts: true,
     nodeGypRebuild: false,

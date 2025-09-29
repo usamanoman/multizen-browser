@@ -84,7 +84,7 @@ export default {
 <style scoped lang="scss">
 .tabs-container {
     display: flex;
-    color: #fff;
+    color: #3f2a08;
     padding-right: 5px;
     padding-left: 56px;
     margin-top: auto;
@@ -95,17 +95,23 @@ export default {
 .tab {
     display: flex;
     position: relative;
-    background-color: rgba(29, 28, 59, 0.35);
+    background-color: rgba(255, 215, 163, 0.7);
     padding: 8px 10px 6px 10px;
     margin-right: 6px;
     border-radius: 5px 5px 0 0;
+    color: inherit;
+    box-shadow: 0 1px 2px rgba(63, 42, 8, 0.12);
+    border: 1px solid transparent;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
 
     &:hover {
-        background-color: rgba(29, 28, 59, 0.7);
+        background-color: rgba(255, 215, 163, 0.9);
     }
 
     &.active {
-        background-color: #1d1c3b;
+        background-color: #ffffff;
+        border-color: #ffca83;
+        box-shadow: 0 2px 6px rgba(63, 42, 8, 0.18);
     }
 
     .tab-name {
@@ -138,11 +144,11 @@ export default {
         background-color: transparent;
         border: 0;
         outline: 0;
-        color: #f4f4f4;
+        color: #7a4a00;
         border-radius: 50%;
 
         &:hover {
-            background-color: rgba(33, 60, 94, 0.9);
+            background-color: rgba(255, 202, 131, 0.35);
         }
     }
 }
@@ -156,11 +162,12 @@ export default {
     background-color: transparent;
     border: 0;
     outline: 0;
-    color: #f3f3f3;
+    color: #3f2a08;
     border-radius: 50%;
+    transition: background-color 0.2s ease;
 
     &:hover {
-        background-color: rgba(245, 245, 245, 0.2);
+        background-color: rgba(255, 202, 131, 0.25);
     }
 }
 </style>

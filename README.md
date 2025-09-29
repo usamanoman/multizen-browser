@@ -1,12 +1,10 @@
-# MultiZen Browser
+# ReachOwl Runner
 
 ## Overview
 
-Welcome to the MultiZen Browser project. This is an open-source multi-session browser, primarily designed for private browsing. It was developed out of a need for a substantial multi-session tool.
+Welcome to the ReachOwl Runner project. This is an open-source multi-session browser, primarily designed for private browsing. It was developed out of a need for a substantial multi-session tool.
 
-Check out the website: https://getmultizen.com/
-
-![MultiZen Overview](resources/preview/0.1.1.gif)
+![ReachOwl Runner Overview](resources/preview/0.1.1.gif)
 
 ## Features
 

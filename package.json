@@ -1,8 +1,8 @@
 {
     "name": "multizen-browser",
-    "productName": "MultiZen Browser",
+    "productName": "ReachOwl Runner",
     "version": "0.1.1",
-    "homepage": "https://GetMultizen.com",
+    "homepage": "https://reachowl.com",
     "repository": {
         "type": "git",
         "url": "https://github.com/multizenteam/multizen-browser.git"
@@ -10,8 +10,8 @@
     "bugs": {
         "url": "https://github.com/multizenteam/multizen-browser/issues"
     },
-    "author": "MultiZen Team <oboshto@gmail.com>",
-    "description": "MultiZen Browser: The New Dimension of Web Browsing. Experience simultaneous, seamless multi-session browsing that puts you in control. Navigate the web in tranquility with the privacy and anonymity you desire. Welcome to MultiZen - Your personal space for calm, clutter-free web exploration.",
+    "author": "ReachOwl Team <oboshto@gmail.com>",
+    "description": "ReachOwl Runner: Empowering focused, multi-session browsing with a warm, streamlined workspace for every task.",
     "private": true,
     "main": "./out/main/index.js",
     "scripts": {
@@ -61,8 +61,8 @@
         "vue": "3.4.15",
         "vue-tsc": "1.8.27"
     },
-    "engines" : {
-        "yarn" : ">=1.22.10",
-        "node" : ">=21.6.1"
-      }
+    "engines": {
+        "yarn": ">=1.22.10",
+        "node": ">=21.6.1"
+    }
 }

@@ -65,7 +65,9 @@ export default {
     display: flex;
     align-items: center;
     height: 38px;
-    background-color: #342b69;
+    background-color: #ffca83;
+    color: #3f2a08;
+    box-shadow: 0 4px 12px rgba(63, 42, 8, 0.12);
 
     &.macos {
         flex-direction: row-reverse;
@@ -80,12 +82,12 @@ export default {
                 outline: none;
                 margin: 0 3px;
                 border: 0;
-                background: rgba(137, 150, 193, 0.22);
+                background: rgba(255, 215, 163, 0.45);
                 border-radius: 50%;
                 text-align: center;
                 cursor: default;
                 transition: 0.2s ease;
-                color: rgb(0 0 0 / 31%);
+                color: rgb(63 42 8 / 45%);
                 font-size: 8px;
 
                 &:hover {
@@ -138,16 +140,16 @@ export default {
         outline: none;
         margin: 0 3px;
         border: 0;
-        background: rgba(137, 150, 193, 0.22);
+        background: rgba(255, 215, 163, 0.45);
         border-radius: 50%;
         text-align: center;
         cursor: default;
         transition: 0.2s ease;
-        color: #f8f9fb;
+        color: #3f2a08;
         font-size: 10px;
 
         &:hover {
-            background: rgba(137, 150, 193, 0.55);
+            background: rgba(255, 215, 163, 0.75);
         }
     }
 }

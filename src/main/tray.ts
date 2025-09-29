@@ -31,7 +31,7 @@ export default class TrayMenuBuilder {
     buildTray(): Menu {
         return Menu.buildFromTemplate([
             {
-                label: "Open MultiZen",
+                label: "Open ReachOwl Runner",
                 click: () => {
                     this.mainWindow.show();
                 },

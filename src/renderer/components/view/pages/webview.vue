@@ -178,16 +178,16 @@ export default {
     height: 40px;
     min-height: 40px;
     max-height: 40px;
-    background-color: #1d1c3b;
+    background-color: #ffca83;
     display: flex;
     align-items: center;
     font-size: 12px;
-    border-bottom: 1px solid #1d224a;
+    border-bottom: 1px solid #f0a94a;
     z-index: 1;
     padding: 10px;
 
     button {
-        color: #f3f3f3;
+        color: #3f2a08;
         width: 25px;
         height: 25px;
         border-radius: 50%;
@@ -196,7 +196,7 @@ export default {
         font-size: 12px;
 
         &:hover {
-            background: rgba(247, 247, 247, 0.2);
+            background: rgba(255, 215, 163, 0.5);
         }
     }
 }
@@ -214,6 +214,7 @@ export default {
     height: 100%;
     display: flex;
     flex-direction: column;
+    background: #ffd7a3;
 
     .view-container-content {
         height: 100%;

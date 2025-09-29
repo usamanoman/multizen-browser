@@ -59,14 +59,14 @@ export default {
     height: 100%;
     width: 100%;
     padding: 12px;
-    color: #4d4d58;
-    border: none;
-    background-color: #c3c3ff;
+    color: #3f2a08;
+    border: 1px solid #f0a94a;
+    background-color: #ffffff;
     border-radius: 12px;
     font-family: monospace;
 
     &:focus {
-        outline: none;
+        outline: 2px solid #ffca83;
     }
 }
 </style>

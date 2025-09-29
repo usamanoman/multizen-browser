@@ -10,7 +10,7 @@ export default createStore<IState>({
     strict: process.env.NODE_ENV !== "production",
     plugins: [
         createPersistedState({
-            key: "multizen-browser-storage",
+            key: "reachowl-runner-storage",
         }),
     ],
 });
