@@ -2,8 +2,11 @@
     <div v-if="showModal" class="modal" @click.self="showModal = false">
         <div class="modal-content">
             <span class="close" @click="showModal = false">&times;</span>
-            <h2>Welcome to MultiZen Browser v.{{ version }}!</h2>
-            <p>I'm glad to see you here. MultiZen is an open-source browser.</p>
+            <h2>Welcome to ReachOwl Runner v.{{ version }}!</h2>
+            <p>
+                We're excited to have you here. ReachOwl Runner is an open-source
+                browser built for calm, multi-session focus.
+            </p>
             <p>
                 If you need any assistance or want to contribute, please reach
                 out:
@@ -55,27 +58,36 @@ export default {
     overflow: auto;
     background-color: rgba(0, 0, 0, 0.4);
     cursor: default;
+    color: #3f2a08;
 
     h2 {
         margin-bottom: 20px;
     }
 
     a {
-        color: #1268cb;
+        color: #8f4b00;
+        font-weight: bold;
+        text-decoration: none;
+
+        &:hover {
+            color: #5f3200;
+            text-decoration: underline;
+        }
     }
 }
 
 .modal-content {
     margin: auto;
     padding: 20px 30px 30px 30px;
-    border: 1px solid #888;
+    border: 2px solid #ffca83;
     width: 650px;
     border-radius: 6px;
-    background-color: #eceeff;
+    background-color: #ffffff;
+    box-shadow: 0 18px 36px rgba(63, 42, 8, 0.16);
 }
 
 .close {
-    color: #aaa;
+    color: #8f4b00;
     float: right;
     font-size: 28px;
     font-weight: bold;
@@ -83,7 +95,7 @@ export default {
 
 .close:hover,
 .close:focus {
-    color: black;
+    color: #5f3200;
     text-decoration: none;
     cursor: pointer;
 }

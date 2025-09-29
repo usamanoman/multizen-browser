@@ -182,53 +182,66 @@ export default {
     align-items: center;
     text-align: left;
     font-size: 16px;
-    color: #6c6969;
+    color: #3f2a08;
     overflow: auto;
+    background: #ffd7a3;
+    padding: 40px 20px;
 }
 
 .settings-wrap {
     width: 100%;
     max-width: 800px;
-    height: 100%;
-    padding-top: 100px;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 48px 56px;
+    box-shadow: 0 12px 30px rgba(63, 42, 8, 0.12);
+}
+
+h1 {
+    color: #3f2a08;
+    margin-bottom: 24px;
 }
 
 .close-session-btn {
     font-family: monospace;
     text-transform: uppercase;
-    background-color: #f8c9c9;
-    border: 1px solid #dc7575;
-    border-radius: 5px;
+    background-color: #ffe1cc;
+    border: 1px solid #f0a94a;
+    border-radius: 8px;
     outline: 0;
-    padding: 5px 9px;
+    padding: 7px 12px;
     cursor: pointer;
     white-space: nowrap;
     font-weight: bold;
+    color: #7a4a00;
 
     &:hover {
-        background-color: #f8d8d8;
-        border: 1px solid #cc4242;
+        background-color: #ffd7a3;
+        border: 1px solid #e1922c;
     }
 }
 
 .session-info {
     margin-bottom: 20px;
     font-size: 14px;
+    color: #7a4a00;
 }
 
 h4 {
     font-size: 13px;
     text-transform: uppercase;
     margin-bottom: 6px;
+    color: #7a4a00;
 }
 
 hr {
     width: 100%;
     height: 1px;
     display: block;
-    background-color: #d8d8d8;
+    background-color: #ffca83;
     border: 0;
-    margin: 16px 0;
+    opacity: 0.5;
+    margin: 24px 0;
 }
 
 .settings-block {
@@ -237,7 +250,7 @@ hr {
 
 .input-block {
     label {
-        color: #27262e;
+        color: #3f2a08;
         font-size: 14px;
     }
 
@@ -246,18 +259,18 @@ hr {
         width: 100%;
         padding: 6px;
         outline: 0;
-        border: 2px solid #d9d9ff;
-        border-radius: 3px;
+        border: 2px solid #ffca83;
+        border-radius: 6px;
         transition: 0.3s ease;
 
         &:read-only {
             cursor: default;
             color: gray;
-            border: 2px solid #bebebe;
+            border: 2px solid #e7b26a;
         }
 
         &:focus {
-            border: 2px solid #7575dc;
+            border: 2px solid #f0a94a;
         }
     }
 
@@ -272,7 +285,7 @@ hr {
         text-transform: uppercase;
 
         &.disabled {
-            color: #999;
+            color: #c28c3d;
             cursor: not-allowed;
         }
     }
@@ -281,18 +294,19 @@ hr {
 .set-ua-btn {
     font-family: monospace;
     text-transform: uppercase;
-    background-color: #c9c9f8;
-    border: 1px solid #7575dc;
-    border-radius: 5px;
+    background-color: #ffca83;
+    border: 1px solid #f0a94a;
+    border-radius: 8px;
     outline: 0;
-    padding: 5px 9px;
+    padding: 7px 12px;
     margin-left: 12px;
     cursor: pointer;
     white-space: nowrap;
+    color: #3f2a08;
 
     &:hover {
-        background-color: #d8d8f8;
-        border: 1px solid #4242cc;
+        background-color: #ffd7a3;
+        border: 1px solid #e1922c;
 
         i {
             transform: rotate(360deg);

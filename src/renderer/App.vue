@@ -87,6 +87,8 @@ body {
     font-weight: 400;
     -webkit-font-smoothing: subpixel-antialiased;
     -moz-osx-font-smoothing: auto;
+    background: #ffd7a3;
+    color: #3f2a08;
 }
 
 #app {
@@ -97,10 +99,11 @@ body {
 
     .app-views {
         width: 100%;
-        background: #eaeaea;
+        background: #ffd7a3;
 
         .app-views-container {
             height: 100%;
+            background: #ffd7a3;
         }
     }
 }

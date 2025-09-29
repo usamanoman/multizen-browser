@@ -31,20 +31,21 @@ export default {
     padding: 8px;
     border: 1px solid transparent;
     cursor: pointer;
-    transition: 0.2s ease;
+    transition: 0.3s ease;
+    border-radius: 16px;
 
     &:hover {
-        background-color: rgba(82, 104, 162, 0.3);
+        background-color: rgba(255, 202, 131, 0.35);
         border-radius: 50%;
     }
 
     &.active {
-        background-color: rgba(38, 78, 185, 0.3);
+        background-color: rgba(255, 202, 131, 0.8);
         border-radius: 50%;
     }
 
     i {
-        color: #575757;
+        color: #7a4a00;
     }
 
     &.new-session {
@@ -54,21 +55,21 @@ export default {
         align-items: center;
         justify-content: center;
         margin: 10px 0;
-        border: 1px solid rgba(54, 74, 128, 0.2);
+        border: 1px solid rgba(255, 202, 131, 0.6);
         border-radius: 12px;
-        color: #f1f1f1;
+        color: #7a4a00;
         font-size: 18px;
         transition: 0.5s ease;
-        background-color: rgba(82, 104, 162, 0.2);
+        background-color: rgba(255, 215, 163, 0.6);
 
         &:hover {
-            color: white;
-            border-color: rgba(97, 115, 164, 0.9);
-            background-color: rgba(97, 115, 164, 0.5);
+            color: #5f3200;
+            border-color: rgba(255, 202, 131, 0.9);
+            background-color: rgba(255, 215, 163, 0.85);
         }
 
         i {
-            color: #8097e8;
+            color: #7a4a00;
         }
     }
 

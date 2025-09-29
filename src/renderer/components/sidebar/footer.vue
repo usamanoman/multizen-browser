@@ -36,7 +36,7 @@ export default {
     padding-bottom: 10px;
     font-size: 10px;
     text-align: center;
-    color: #6b6b6b;
+    color: #7a4a00;
 
     a {
         margin: 2px 0;
@@ -46,21 +46,28 @@ export default {
         transition: 0.2s ease;
 
         &:hover {
-            color: white;
+            color: #5f3200;
         }
     }
 }
 
 .open-info-modal-btn {
-    background-color: #697ca6;
-    border: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffca83;
+    border: 1px solid #f0a94a;
     outline: 0;
-    border-radius: 4px;
+    border-radius: 8px;
     margin-bottom: 5px;
     cursor: pointer;
+    color: #3f2a08;
+    width: 28px;
+    height: 28px;
+    transition: 0.3s ease;
 
     &:hover {
-        background-color: #9baed7;
+        background-color: #ffd7a3;
     }
 }
 </style>

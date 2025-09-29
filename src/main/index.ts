@@ -123,6 +123,6 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
-    logger.log("All windows are closed. It's time to exit MultiZen.");
+    logger.log("All windows are closed. It's time to exit ReachOwl Runner.");
     app.quit();
 });
