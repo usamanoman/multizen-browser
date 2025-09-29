@@ -18,7 +18,9 @@
                             v-model="homePage"
                             class="d-block"
                             type="url"
-                            readonly
+                            @blur="saveHomePage"
+                            @change="saveHomePage"
+                            @keyup.enter="saveHomePage"
                         />
                     </div>
                 </div>
@@ -140,9 +142,11 @@
 <script lang="ts">
 import { mapGetters, mapMutations } from "vuex";
 import userAgents from "@renderer/user-agents/useragents.json";
-import { defaultBrowserPreference, defaultHomePage } from "@renderer/data/main";
-
-const defaultUserAgent = window.navigator.userAgent;
+import {
+    defaultBrowserPreference,
+    defaultHomePage,
+    defaultUserAgent as chromeLikeUserAgent,
+} from "@renderer/data/main";
 
 function getIpcRenderer() {
     return window.electron?.ipcRenderer;
@@ -153,7 +157,7 @@ export default {
         return {
             userAgent: "",
             homePage: "",
-            defaultUserAgent,
+            defaultUserAgent: chromeLikeUserAgent,
             browserPreference: defaultBrowserPreference,
             chromeInstalled: null as null | boolean,
             checkingChrome: false,
@@ -173,14 +177,15 @@ export default {
                 }
 
                 this.userAgent = session.settings.userAgent;
-                const enforcedHomePage = defaultHomePage;
-                this.homePage = enforcedHomePage;
+                const storedHomePage =
+                    session.settings.homePage || defaultHomePage;
+                this.homePage = storedHomePage;
 
-                if (session.settings.homePage !== enforcedHomePage) {
+                if (session.settings.homePage !== storedHomePage) {
                     this.updateSessionSetting({
                         sessionIndex: this.currentSessionIndex,
                         k: "homePage",
-                        v: enforcedHomePage,
+                        v: storedHomePage,
                     });
                 }
 
@@ -195,7 +200,12 @@ export default {
                     });
                 }
 
-                this.checkChromeAvailability();
+                if (this.browserPreference === "chrome") {
+                    this.checkChromeAvailability();
+                } else {
+                    this.chromeInstalled = null;
+                    this.checkingChrome = false;
+                }
             },
         },
     },
@@ -204,7 +214,7 @@ export default {
         ...mapMutations("sessions", ["updateSessionSetting", "removeSession"]),
 
         setDefaultUserAgent() {
-            this.userAgent = defaultUserAgent;
+            this.userAgent = chromeLikeUserAgent;
             this.saveUserAgent();
         },
 
@@ -221,7 +231,34 @@ export default {
             });
         },
 
+        saveHomePage() {
+            const nextHomePage = this.homePage?.trim() || defaultHomePage;
+
+            if (nextHomePage !== this.homePage) {
+                this.homePage = nextHomePage;
+            }
+
+            if (
+                this.currentSession?.settings.homePage === nextHomePage ||
+                !this.currentSession
+            ) {
+                return;
+            }
+
+            this.updateSessionSetting({
+                sessionIndex: this.currentSessionIndex,
+                k: "homePage",
+                v: nextHomePage,
+            });
+        },
+
         async checkChromeAvailability() {
+            if (this.browserPreference !== "chrome") {
+                this.chromeInstalled = null;
+                this.checkingChrome = false;
+                return;
+            }
+
             this.chromeInstalled = null;
             this.checkingChrome = true;
 
