@@ -1,9 +1,3 @@
-2025/09/29-14:50:49.526 6c03 Reusing MANIFEST /Users/usama/Projects/multizen-browser/ReachOwl Runner/Local Storage/leveldb/MANIFEST-000001
-2025/09/29-14:50:49.539 6c03 Recovering log #4
-2025/09/29-14:50:49.540 6c03 Reusing old log /Users/usama/Projects/multizen-browser/ReachOwl Runner/Local Storage/leveldb/000004.log 
-2025/09/29-14:54:39.003 7107 Level-0 table #7: started
-2025/09/29-14:54:39.011 7107 Level-0 table #7: 21934 bytes OK
-2025/09/29-14:54:39.024 7107 Delete type=0 #4
-2025/09/29-14:55:49.949 7107 Level-0 table #9: started
-2025/09/29-14:55:49.965 7107 Level-0 table #9: 18501 bytes OK
-2025/09/29-14:55:49.973 7107 Delete type=0 #6
+2025/09/29-15:05:06.676 7007 Reusing MANIFEST /Users/usama/Projects/multizen-browser/ReachOwl Runner/Local Storage/leveldb/MANIFEST-000001
+2025/09/29-15:05:06.702 7007 Recovering log #8
+2025/09/29-15:05:06.705 7007 Reusing old log /Users/usama/Projects/multizen-browser/ReachOwl Runner/Local Storage/leveldb/000008.log 
