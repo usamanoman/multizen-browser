@@ -2,7 +2,11 @@ import { IState } from "@renderer/interface/IStore";
 import { MutationTree } from "vuex";
 import set from "lodash/set";
 import { v4 as uuid } from "uuid";
-import { defaultHomePage, defaultUserAgent } from "@renderer/data/main";
+import {
+    defaultBrowserPreference,
+    defaultHomePage,
+    defaultUserAgent,
+} from "@renderer/data/main";
 
 const mutations: MutationTree<IState> = {
     addSession: async (s) => {
@@ -21,6 +25,7 @@ const mutations: MutationTree<IState> = {
             settings: {
                 homePage: defaultHomePage,
                 userAgent: defaultUserAgent,
+                browser: defaultBrowserPreference,
             },
         });
         s.currentSessionIndex = s.sessions.length - 1;

@@ -15,41 +15,62 @@
                     <h4>Home page</h4>
                     <div class="input-block">
                         <input
-                            v-model="homePage"
+                            v-model.trim="homePage"
                             class="d-block"
                             type="url"
-                            required
-                            @blur="saveHomePage"
-                            @change="saveHomePage"
+                            @blur="persistHomePage"
+                            @keyup.enter="persistHomePage"
                         />
+                    </div>
+                </div>
+                <hr />
+                <div class="settings-block">
+                    <h4>Browser</h4>
+                    <div class="input-block">
+                        <select
+                            v-model="browserPreference"
+                            class="browser-select d-block"
+                            disabled
+                        >
+                            <option value="chrome">Google Chrome</option>
+                        </select>
+                        <p
+                            v-if="
+                                browserPreference === 'chrome' &&
+                                (checkingChrome || !chromeInstalled)
+                            "
+                            class="chrome-status"
+                        >
+                            <span v-if="checkingChrome"
+                                >Checking for Google Chrome...</span
+                            >
+                            <span v-else>
+                                Google Chrome was not found on this device.
+                                <button
+                                    type="button"
+                                    class="set-ua-btn install-chrome-btn"
+                                    @click="installChrome"
+                                >
+                                    <i class="fa fa-download" /> Install Chrome
+                                </button>
+                            </span>
+                        </p>
                     </div>
                 </div>
                 <hr />
                 <div class="settings-block">
                     <h4>User Agent</h4>
                     <div class="input-block">
-                        <div class="d-flex">
-                            <input
-                                v-model="userAgent"
-                                class="d-block"
-                                type="text"
-                                @blur="saveUserAgent"
-                                @change="saveUserAgent"
-                            />
-                            <button
-                                class="set-ua-btn"
-                                @click="setDefaultUserAgent"
-                            >
-                                <i class="fa fa-globe" /> Set default
-                            </button>
-
-                            <button
-                                class="set-ua-btn"
-                                @click="setRandomUserAgent"
-                            >
-                                <i class="fa fa-refresh" /> Get random
-                            </button>
-                        </div>
+                        <input
+                            :value="enforcedUserAgent"
+                            class="d-block"
+                            type="text"
+                            readonly
+                        />
+                        <p class="field-hint">
+                            Chrome's default user agent is enforced for all
+                            sessions.
+                        </p>
                     </div>
                 </div>
                 <hr />
@@ -105,68 +126,148 @@
 
 <script lang="ts">
 import { mapGetters, mapMutations } from "vuex";
-import userAgents from "@renderer/user-agents/useragents.json";
+import {
+    defaultBrowserPreference,
+    defaultHomePage,
+    defaultUserAgent as chromeLikeUserAgent,
+} from "@renderer/data/main";
 
-const defaultUserAgent = window.navigator.userAgent;
+function getIpcRenderer() {
+    return window.electron?.ipcRenderer;
+}
 
 export default {
     data() {
         return {
-            userAgent: "",
-            homePage: "",
-            defaultUserAgent,
+            homePage: defaultHomePage,
+            browserPreference: defaultBrowserPreference,
+            chromeInstalled: null as null | boolean,
+            checkingChrome: false,
         };
     },
 
     computed: {
         ...mapGetters("sessions", ["currentSession", "currentSessionIndex"]),
+        enforcedUserAgent(): string {
+            return chromeLikeUserAgent;
+        },
     },
 
-    created() {
-        this.userAgent = this.currentSession.settings.userAgent;
-        this.homePage = this.currentSession.settings.homePage;
+    watch: {
+        currentSession: {
+            immediate: true,
+            handler(session) {
+                if (!session?.settings) {
+                    return;
+                }
+
+                const sessionHomePage = session.settings.homePage?.trim();
+                const resolvedHomePage = sessionHomePage || defaultHomePage;
+                this.homePage = resolvedHomePage;
+
+                if (session.settings.homePage !== resolvedHomePage) {
+                    this.updateSessionSetting({
+                        sessionIndex: this.currentSessionIndex,
+                        k: "homePage",
+                        v: resolvedHomePage,
+                    });
+                }
+
+                const enforcedBrowser = defaultBrowserPreference;
+                this.browserPreference = enforcedBrowser;
+
+                if (session.settings.browser !== enforcedBrowser) {
+                    this.updateSessionSetting({
+                        sessionIndex: this.currentSessionIndex,
+                        k: "browser",
+                        v: enforcedBrowser,
+                    });
+                }
+
+                const enforcedUserAgent = chromeLikeUserAgent;
+
+                if (session.settings.userAgent !== enforcedUserAgent) {
+                    this.updateSessionSetting({
+                        sessionIndex: this.currentSessionIndex,
+                        k: "userAgent",
+                        v: enforcedUserAgent,
+                    });
+                }
+
+                if (this.browserPreference === "chrome") {
+                    this.checkChromeAvailability();
+                } else {
+                    this.chromeInstalled = null;
+                    this.checkingChrome = false;
+                }
+            },
+        },
     },
 
     methods: {
         ...mapMutations("sessions", ["updateSessionSetting", "removeSession"]),
 
-        saveHomePage() {
-            this.homePage = this.urlify(this.homePage.trim());
-            this.updateSessionSetting({
-                sessionIndex: this.currentSessionIndex,
-                k: "homePage",
-                v: this.homePage,
-            });
+        persistHomePage() {
+            if (!this.currentSession) {
+                return;
+            }
+
+            const trimmedHomePage = this.homePage?.trim();
+            const nextHomePage = trimmedHomePage || defaultHomePage;
+
+            if (this.homePage !== nextHomePage) {
+                this.homePage = nextHomePage;
+            }
+
+            if (this.currentSession.settings?.homePage !== nextHomePage) {
+                this.updateSessionSetting({
+                    sessionIndex: this.currentSessionIndex,
+                    k: "homePage",
+                    v: nextHomePage,
+                });
+            }
         },
 
-        setDefaultUserAgent() {
-            this.userAgent = defaultUserAgent;
-            this.saveUserAgent();
-        },
+        async checkChromeAvailability() {
+            if (this.browserPreference !== "chrome") {
+                this.chromeInstalled = null;
+                this.checkingChrome = false;
+                return;
+            }
 
-        setRandomUserAgent() {
-            this.userAgent = this.getRandomUserAgent();
-            this.saveUserAgent();
-        },
+            this.chromeInstalled = null;
+            this.checkingChrome = true;
 
-        saveUserAgent() {
-            this.updateSessionSetting({
-                sessionIndex: this.currentSessionIndex,
-                k: "userAgent",
-                v: this.userAgent,
-            });
+            try {
+                const ipcRenderer = getIpcRenderer();
+                if (!ipcRenderer) {
+                    throw new Error("IPC renderer bridge is unavailable");
+                }
+
+                const result = await ipcRenderer.invoke("browser:check-chrome");
+                this.chromeInstalled = Boolean(result?.installed);
+            } catch (error) {
+                this.chromeInstalled = false;
+            } finally {
+                this.checkingChrome = false;
+            }
         },
 
         closeSession() {
             this.removeSession({ sessionIndex: this.currentSessionIndex });
         },
 
-        urlify(url) {
-            return url.indexOf("://") === -1 ? "https://" + url : url;
-        },
+        async installChrome() {
+            try {
+                const ipcRenderer = getIpcRenderer();
+                if (!ipcRenderer) {
+                    throw new Error("IPC renderer bridge is unavailable");
+                }
 
-        getRandomUserAgent() {
-            return userAgents[Math.floor(Math.random() * userAgents.length)];
+                await ipcRenderer.invoke("browser:install-chrome");
+            } catch (error) {
+                console.error("Failed to open Chrome download page", error);
+            }
         },
     },
 };
@@ -274,6 +375,20 @@ hr {
         }
     }
 
+    select {
+        width: 100%;
+        padding: 6px;
+        outline: 0;
+        border: 2px solid #d9d9ff;
+        border-radius: 3px;
+        background-color: white;
+        transition: 0.3s ease;
+
+        &:focus {
+            border: 2px solid #7575dc;
+        }
+    }
+
     .radio-block {
         margin: 7px 0;
         display: block;
@@ -316,5 +431,21 @@ hr {
     i {
         transition: 0.5s ease;
     }
+}
+
+.chrome-status {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #27262e;
+}
+
+.install-chrome-btn {
+    margin-left: 8px;
+}
+
+.field-hint {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #999;
 }
 </style>

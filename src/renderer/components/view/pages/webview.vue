@@ -25,15 +25,29 @@
             <url :value="currentTab.url" @navigate="navigate($event)" />
         </div>
 
+        <div v-if="isChromeBrowser" class="chrome-info">
+            <p v-if="checkingChrome">Checking for Google Chrome...</p>
+            <div v-else-if="chromeInstalled === false">
+                <p>Google Chrome is not installed on this device.</p>
+                <button
+                    type="button"
+                    class="chrome-install-btn"
+                    @click="installChrome"
+                >
+                    <i class="fa fa-download" /> Install Chrome
+                </button>
+            </div>
+        </div>
+
         <div class="view-container-content">
             <webview
                 v-show="currentTab"
                 ref="view"
-                :key="currentTab.session"
+                :key="webviewKey"
                 autosize
                 class="webview"
                 :src="currentTab.url"
-                :partition="`persist:${currentTab.session}`"
+                :partition="webviewPartition"
                 :useragent="currentSession.settings.userAgent"
                 @dom-ready="loaded"
             />
@@ -43,9 +57,13 @@
 
 <script lang="ts">
 import Url from "./../controls/url.vue";
-import { WebviewTag } from "electron";
+import type { WebviewTag } from "electron";
 import get from "lodash/get";
 import { mapGetters, mapMutations } from "vuex";
+
+function getIpcRenderer() {
+    return window.electron?.ipcRenderer;
+}
 
 const events = {
     "did-finish-load": "didFinishLoad",
@@ -64,6 +82,8 @@ export default {
         return {
             view: null as WebviewTag | null,
             loading: false,
+            chromeInstalled: null as null | boolean,
+            checkingChrome: false,
         };
     },
 
@@ -73,23 +93,32 @@ export default {
             "currentTab",
             "currentSessionIndex",
         ]),
-    },
+        isChromeBrowser(): boolean {
+            return true;
+        },
+        webviewPartition(): string | null {
+            const sessionId = this.currentTab?.session;
+            if (!sessionId) {
+                return "persist:chrome-default";
+            }
 
-    watch: {
-        url: {
-            handler(url) {
-                this.updateTab({
-                    sessionIndex: this.currentSessionIndex,
-                    tabIndex: this.currentSession.currentTabIndex,
-                    k: "url",
-                    v: url,
-                });
-            },
+            return `persist:chrome-${sessionId}`;
+        },
+        webviewKey(): string {
+            const sessionId = this.currentTab?.session ?? "unknown";
+            return `${sessionId}-chrome`;
         },
     },
 
-    mounted() {
-        this.$nextTick(() => this.initView());
+    watch: {
+        isChromeBrowser: {
+            immediate: true,
+            handler(isChrome: boolean) {
+                if (isChrome) {
+                    this.switchToChromeMode();
+                }
+            },
+        },
     },
 
     beforeUnmount() {
@@ -98,6 +127,46 @@ export default {
 
     methods: {
         ...mapMutations("sessions", ["updateTab"]),
+
+        async checkChromeAvailability() {
+            this.chromeInstalled = null;
+            this.checkingChrome = true;
+
+            try {
+                const ipcRenderer = getIpcRenderer();
+                if (!ipcRenderer) {
+                    throw new Error("IPC renderer bridge is unavailable");
+                }
+
+                const result = await ipcRenderer.invoke("browser:check-chrome");
+                this.chromeInstalled = Boolean(result?.installed);
+            } catch (error) {
+                console.error("Failed to check Chrome availability", error);
+                this.chromeInstalled = false;
+            } finally {
+                this.checkingChrome = false;
+            }
+        },
+
+        async installChrome() {
+            try {
+                const ipcRenderer = getIpcRenderer();
+                if (!ipcRenderer) {
+                    throw new Error("IPC renderer bridge is unavailable");
+                }
+
+                await ipcRenderer.invoke("browser:install-chrome");
+            } catch (error) {
+                console.error("Failed to open Chrome download page", error);
+            }
+        },
+
+        switchToChromeMode() {
+            this.removeEventListeners();
+            this.view = null;
+            this.loading = false;
+            this.checkChromeAvailability();
+        },
 
         navigate(url: string) {
             if (url !== this.view?.getURL()) {
@@ -114,18 +183,28 @@ export default {
         },
 
         didNavigate(e) {
+            const session = this.currentSession;
+            if (!session) {
+                return;
+            }
+
             this.updateTab({
                 sessionIndex: this.currentSessionIndex,
-                tabIndex: this.currentSession.currentTabIndex,
+                tabIndex: session.currentTabIndex,
                 k: "url",
                 v: e.url,
             });
         },
 
         pageFaviconUpdated(r) {
+            const session = this.currentSession;
+            if (!session) {
+                return;
+            }
+
             this.updateTab({
                 sessionIndex: this.currentSessionIndex,
-                tabIndex: this.currentSession.currentTabIndex,
+                tabIndex: session.currentTabIndex,
                 k: "favicon",
                 v: get(r, "favicons.0", null),
             });
@@ -145,9 +224,14 @@ export default {
         didStopLoading() {
             this.loading = false;
 
+            const session = this.currentSession;
+            if (!session) {
+                return;
+            }
+
             this.updateTab({
                 sessionIndex: this.currentSessionIndex,
-                tabIndex: this.currentSession.currentTabIndex,
+                tabIndex: session.currentTabIndex,
                 k: "title",
                 v: this.view?.getTitle(),
             });
@@ -155,13 +239,6 @@ export default {
 
         didFailLoad(e) {
             console.info("Load failed with error code: ", e.errorCode);
-        },
-
-        initView() {
-            this.view = this.$refs.view as WebviewTag;
-            Object.keys(events).forEach((event) =>
-                this.view?.addEventListener(event, this[events[event]]),
-            );
         },
 
         removeEventListeners() {
@@ -236,5 +313,48 @@ export default {
             }
         }
     }
+}
+
+.chrome-install-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 0;
+    background-color: #697ca6;
+    color: #f3f3f3;
+    cursor: pointer;
+    font-size: 12px;
+    text-transform: uppercase;
+    font-family: monospace;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.chrome-install-btn:hover {
+    background-color: #9baed7;
+}
+
+.chrome-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px;
+    gap: 12px;
+    color: #6c6969;
+    font-size: 14px;
+    background-color: #15132b;
+    border-bottom: 1px solid #1d224a;
+    width: 100%;
+}
+
+.chrome-info p {
+    margin: 0;
+}
+
+.chrome-info div {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 </style>
