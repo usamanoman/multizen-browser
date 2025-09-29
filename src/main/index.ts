@@ -63,7 +63,10 @@ function createWindow(): void {
     trayBuilder.buildMenu();
 
     mainWindow.webContents.setWindowOpenHandler((details) => {
-        shell.openExternal(details.url);
+        if (!/^https?:/i.test(details.url)) {
+            shell.openExternal(details.url);
+        }
+
         return { action: "deny" };
     });
 

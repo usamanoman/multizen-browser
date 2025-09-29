@@ -1,4 +1,4 @@
-import { ipcMain } from "electron";
+import { ipcMain, shell } from "electron";
 import {
     getChromeInstallation,
     launchChrome,
@@ -32,6 +32,15 @@ function initBrowserIPC() {
 
     ipcMain.handle("browser:install-chrome", async () => {
         openChromeDownloadPage();
+        return true;
+    });
+
+    ipcMain.handle("browser:open-external", async (_event, url?: string) => {
+        if (!url) {
+            return false;
+        }
+
+        await shell.openExternal(url);
         return true;
     });
 }

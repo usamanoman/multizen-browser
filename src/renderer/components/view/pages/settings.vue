@@ -68,7 +68,7 @@
                             readonly
                         />
                         <p class="field-hint">
-                            Chrome's default user agent is enforced for all
+                            Your current user agent is enforced for all
                             sessions.
                         </p>
                     </div>
@@ -129,7 +129,7 @@ import { mapGetters, mapMutations } from "vuex";
 import {
     defaultBrowserPreference,
     defaultHomePage,
-    defaultUserAgent as chromeLikeUserAgent,
+    defaultUserAgent,
 } from "@renderer/data/main";
 
 function getIpcRenderer() {
@@ -149,7 +149,7 @@ export default {
     computed: {
         ...mapGetters("sessions", ["currentSession", "currentSessionIndex"]),
         enforcedUserAgent(): string {
-            return chromeLikeUserAgent;
+            return defaultUserAgent;
         },
     },
 
@@ -184,7 +184,7 @@ export default {
                     });
                 }
 
-                const enforcedUserAgent = chromeLikeUserAgent;
+                const enforcedUserAgent = defaultUserAgent;
 
                 if (session.settings.userAgent !== enforcedUserAgent) {
                     this.updateSessionSetting({

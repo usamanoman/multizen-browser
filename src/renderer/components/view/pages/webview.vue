@@ -25,7 +25,13 @@
             <url :value="currentTab.url" @navigate="navigate($event)" />
         </div>
 
-        <div v-if="isChromeBrowser" class="chrome-info">
+        <div
+            v-if="
+                isChromeBrowser &&
+                (checkingChrome || chromeInstalled === false)
+            "
+            class="chrome-info"
+        >
             <p v-if="checkingChrome">Checking for Google Chrome...</p>
             <div v-else-if="chromeInstalled === false">
                 <p>Google Chrome is not installed on this device.</p>
@@ -72,6 +78,7 @@ const events = {
     "did-stop-loading": "didStopLoading",
     "did-navigate": "didNavigate",
     "did-fail-load": "didFailLoad",
+    "new-window": "didOpenNewWindow",
 };
 
 export default {
@@ -94,7 +101,9 @@ export default {
             "currentSessionIndex",
         ]),
         isChromeBrowser(): boolean {
-            return true;
+            return (
+                this.currentSession?.settings?.browser === "chrome" || false
+            );
         },
         webviewPartition(): string | null {
             const sessionId = this.currentTab?.session;
@@ -126,7 +135,7 @@ export default {
     },
 
     methods: {
-        ...mapMutations("sessions", ["updateTab"]),
+        ...mapMutations("sessions", ["updateTab", "addTab"]),
 
         async checkChromeAvailability() {
             this.chromeInstalled = null;
@@ -239,6 +248,44 @@ export default {
 
         didFailLoad(e) {
             console.info("Load failed with error code: ", e.errorCode);
+        },
+
+        didOpenNewWindow(event) {
+            const targetUrl = event?.url;
+
+            if (!targetUrl) {
+                return;
+            }
+
+            if (typeof event.preventDefault === "function") {
+                event.preventDefault();
+            }
+
+            if (!this.currentSession) {
+                return;
+            }
+
+            if (!/^https?:/i.test(targetUrl)) {
+                const ipcRenderer = getIpcRenderer();
+
+                if (ipcRenderer) {
+                    ipcRenderer.invoke("browser:open-external", targetUrl);
+                }
+
+                return;
+            }
+
+            const disposition = event.disposition || "";
+            const shouldActivate = disposition !== "background-tab";
+            const providedTitle = event.title?.trim?.();
+            const fallbackTitle = providedTitle || targetUrl;
+
+            this.addTab({
+                sessionIndex: this.currentSessionIndex,
+                url: targetUrl,
+                title: fallbackTitle,
+                activate: shouldActivate,
+            });
         },
 
         removeEventListeners() {

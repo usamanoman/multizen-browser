@@ -3,7 +3,7 @@ export type BrowserPreference = "chrome";
 export interface ITab {
     id: string;
     type?: "settings";
-    favicon?: null;
+    favicon?: string | null;
     title: string;
     url?: string;
     session: string;

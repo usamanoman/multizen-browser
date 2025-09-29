@@ -1,4 +1,4 @@
-import { IState } from "@renderer/interface/IStore";
+import { IState, ITab } from "@renderer/interface/IStore";
 import { MutationTree } from "vuex";
 import set from "lodash/set";
 import { v4 as uuid } from "uuid";
@@ -7,6 +7,15 @@ import {
     defaultHomePage,
     defaultUserAgent,
 } from "@renderer/data/main";
+
+type AddTabPayload = {
+    sessionIndex: number;
+    url?: string;
+    title?: string;
+    activate?: boolean;
+    favicon?: string | null;
+    type?: string;
+};
 
 const mutations: MutationTree<IState> = {
     addSession: async (s) => {
@@ -30,16 +39,32 @@ const mutations: MutationTree<IState> = {
         });
         s.currentSessionIndex = s.sessions.length - 1;
     },
-    addTab: (s, { sessionIndex }: { sessionIndex: number }) => {
-        s.sessions[sessionIndex].tabs.push({
-            favicon: null,
+    addTab: (s, payload: AddTabPayload) => {
+        const { sessionIndex, url, title, activate = true, favicon = null, type } =
+            payload;
+        const session = s.sessions[sessionIndex];
+
+        if (!session) {
+            return;
+        }
+
+        const nextTab: ITab = {
+            favicon: favicon ?? null,
             id: uuid(),
-            url: s.sessions[sessionIndex].settings.homePage,
-            title: "New Tab",
-            session: s.sessions[sessionIndex].id,
-        });
-        s.sessions[sessionIndex].currentTabIndex =
-            s.sessions[sessionIndex].tabs.length - 1;
+            session: session.id,
+            title: title ?? "New Tab",
+            url: url ?? session.settings.homePage,
+        };
+
+        if (type) {
+            nextTab.type = type as ITab["type"];
+        }
+
+        session.tabs.push(nextTab);
+
+        if (activate) {
+            session.currentTabIndex = session.tabs.length - 1;
+        }
     },
 
     removeTab: (
