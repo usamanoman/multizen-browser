@@ -44,8 +44,9 @@
                                 >Checking for Google Chrome...</span
                             >
                             <span v-else-if="chromeInstalled"
-                                >Google Chrome detected. Pages will open in your
-                                local Chrome browser.</span
+                                >Google Chrome detected. This session will use a
+                                dedicated profile separate from your personal
+                                Chrome data.</span
                             >
                             <span v-else>
                                 Google Chrome was not found on this device.

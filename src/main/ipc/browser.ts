@@ -12,7 +12,10 @@ function initBrowserIPC() {
 
     ipcMain.handle(
         "browser:launch-chrome",
-        async (_event, payload: { url?: string } | string) => {
+        async (
+            _event,
+            payload: { url?: string; sessionId?: string } | string,
+        ) => {
             const targetUrl =
                 typeof payload === "string" ? payload : payload?.url ?? "";
 
@@ -20,7 +23,10 @@ function initBrowserIPC() {
                 return { installed: false, path: null };
             }
 
-            return launchChrome(targetUrl);
+            const sessionId =
+                typeof payload === "string" ? undefined : payload?.sessionId;
+
+            return launchChrome(targetUrl, { sessionId });
         },
     );
 

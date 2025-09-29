@@ -1,7 +1,7 @@
-import { existsSync } from "fs";
+import { existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import { spawn, spawnSync } from "child_process";
-import { shell } from "electron";
+import { app, shell } from "electron";
 import logger from "electron-log";
 
 type ChromeCheckResult = {
@@ -134,15 +134,60 @@ export function getChromeInstallation(): ChromeCheckResult {
     return { installed: Boolean(chromePath), path: chromePath };
 }
 
-export function launchChrome(url: string): ChromeCheckResult {
+function ensureDirectory(directoryPath: string): void {
+    if (!existsSync(directoryPath)) {
+        mkdirSync(directoryPath, { recursive: true });
+    }
+}
+
+function getProfileDirectory(sessionId?: string): string | null {
+    if (!sessionId) {
+        return null;
+    }
+
+    try {
+        const userDataRoot = app.getPath("userData");
+        const profilesRoot = join(userDataRoot, "chrome-profiles");
+        ensureDirectory(profilesRoot);
+
+        const sanitizedId = sessionId.replace(/[^a-z0-9-_]/gi, "_");
+        const sessionProfile = join(profilesRoot, sanitizedId);
+        ensureDirectory(sessionProfile);
+
+        return sessionProfile;
+    } catch (error) {
+        logger.warn("Failed to prepare Chrome profile directory", error);
+        return null;
+    }
+}
+
+type LaunchChromeOptions = {
+    sessionId?: string;
+};
+
+export function launchChrome(
+    url: string,
+    options: LaunchChromeOptions = {},
+): ChromeCheckResult {
     const { installed, path } = getChromeInstallation();
 
     if (!installed || !path) {
         return { installed: false, path: null };
     }
 
+    const args: string[] = [];
+    const profileDirectory = getProfileDirectory(options.sessionId);
+
+    if (profileDirectory) {
+        args.push(`--user-data-dir=${profileDirectory}`);
+        args.push("--profile-directory=Default");
+    }
+
+    args.push("--new-window");
+    args.push(url);
+
     try {
-        const child = spawn(path, [url], {
+        const child = spawn(path, args, {
             detached: true,
             stdio: "ignore",
         });

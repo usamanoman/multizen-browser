@@ -61,8 +61,9 @@
             <div class="chrome-info">
                 <p v-if="checkingChrome">Checking for Google Chrome...</p>
                 <p v-else-if="chromeInstalled">
-                    Google Chrome detected. Links from this session open in your
-                    local Chrome browser.
+                    Google Chrome detected. Links from this session open in a
+                    dedicated Chrome profile, keeping your personal browser
+                    data separate.
                 </p>
                 <div v-else>
                     <p>Google Chrome is not installed on this device.</p>
@@ -216,6 +217,7 @@ export default {
 
                 const result = await ipcRenderer.invoke("browser:launch-chrome", {
                     url: targetUrl,
+                    sessionId: this.currentSession?.id,
                 });
 
                 this.chromeInstalled = Boolean(result?.installed);
