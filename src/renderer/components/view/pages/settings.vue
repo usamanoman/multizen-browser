@@ -36,16 +36,14 @@
                             <option value="chrome">Google Chrome</option>
                         </select>
                         <p
-                            v-if="browserPreference === 'chrome'"
+                            v-if="
+                                browserPreference === 'chrome' &&
+                                (checkingChrome || !chromeInstalled)
+                            "
                             class="chrome-status"
                         >
                             <span v-if="checkingChrome"
                                 >Checking for Google Chrome...</span
-                            >
-                            <span v-else-if="chromeInstalled"
-                                >Google Chrome detected. This session will use a
-                                dedicated profile separate from your personal
-                                Chrome data.</span
                             >
                             <span v-else>
                                 Google Chrome was not found on this device.
