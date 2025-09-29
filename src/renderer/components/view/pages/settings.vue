@@ -15,12 +15,10 @@
                     <h4>Home page</h4>
                     <div class="input-block">
                         <input
-                            v-model="homePage"
+                            :value="homePage"
                             class="d-block"
                             type="url"
-                            @blur="saveHomePage"
-                            @change="saveHomePage"
-                            @keyup.enter="saveHomePage"
+                            readonly
                         />
                     </div>
                 </div>
@@ -62,28 +60,16 @@
                 <div class="settings-block">
                     <h4>User Agent</h4>
                     <div class="input-block">
-                        <div class="d-flex">
-                            <input
-                                v-model="userAgent"
-                                class="d-block"
-                                type="text"
-                                @blur="saveUserAgent"
-                                @change="saveUserAgent"
-                            />
-                            <button
-                                class="set-ua-btn"
-                                @click="setDefaultUserAgent"
-                            >
-                                <i class="fa fa-globe" /> Set default
-                            </button>
-
-                            <button
-                                class="set-ua-btn"
-                                @click="setRandomUserAgent"
-                            >
-                                <i class="fa fa-refresh" /> Get random
-                            </button>
-                        </div>
+                        <input
+                            :value="enforcedUserAgent"
+                            class="d-block"
+                            type="text"
+                            readonly
+                        />
+                        <p class="field-hint">
+                            Chrome's default user agent is enforced for all
+                            sessions.
+                        </p>
                     </div>
                 </div>
                 <hr />
@@ -139,7 +125,6 @@
 
 <script lang="ts">
 import { mapGetters, mapMutations } from "vuex";
-import userAgents from "@renderer/user-agents/useragents.json";
 import {
     defaultBrowserPreference,
     defaultHomePage,
@@ -153,9 +138,7 @@ function getIpcRenderer() {
 export default {
     data() {
         return {
-            userAgent: "",
-            homePage: "",
-            defaultUserAgent: chromeLikeUserAgent,
+            homePage: defaultHomePage,
             browserPreference: defaultBrowserPreference,
             chromeInstalled: null as null | boolean,
             checkingChrome: false,
@@ -164,6 +147,9 @@ export default {
 
     computed: {
         ...mapGetters("sessions", ["currentSession", "currentSessionIndex"]),
+        enforcedUserAgent(): string {
+            return chromeLikeUserAgent;
+        },
     },
 
     watch: {
@@ -174,16 +160,14 @@ export default {
                     return;
                 }
 
-                this.userAgent = session.settings.userAgent;
-                const storedHomePage =
-                    session.settings.homePage || defaultHomePage;
-                this.homePage = storedHomePage;
+                const enforcedHomePage = defaultHomePage;
+                this.homePage = enforcedHomePage;
 
-                if (session.settings.homePage !== storedHomePage) {
+                if (session.settings.homePage !== enforcedHomePage) {
                     this.updateSessionSetting({
                         sessionIndex: this.currentSessionIndex,
                         k: "homePage",
-                        v: storedHomePage,
+                        v: enforcedHomePage,
                     });
                 }
 
@@ -195,6 +179,16 @@ export default {
                         sessionIndex: this.currentSessionIndex,
                         k: "browser",
                         v: enforcedBrowser,
+                    });
+                }
+
+                const enforcedUserAgent = chromeLikeUserAgent;
+
+                if (session.settings.userAgent !== enforcedUserAgent) {
+                    this.updateSessionSetting({
+                        sessionIndex: this.currentSessionIndex,
+                        k: "userAgent",
+                        v: enforcedUserAgent,
                     });
                 }
 
@@ -210,45 +204,6 @@ export default {
 
     methods: {
         ...mapMutations("sessions", ["updateSessionSetting", "removeSession"]),
-
-        setDefaultUserAgent() {
-            this.userAgent = chromeLikeUserAgent;
-            this.saveUserAgent();
-        },
-
-        setRandomUserAgent() {
-            this.userAgent = this.getRandomUserAgent();
-            this.saveUserAgent();
-        },
-
-        saveUserAgent() {
-            this.updateSessionSetting({
-                sessionIndex: this.currentSessionIndex,
-                k: "userAgent",
-                v: this.userAgent,
-            });
-        },
-
-        saveHomePage() {
-            const nextHomePage = this.homePage?.trim() || defaultHomePage;
-
-            if (nextHomePage !== this.homePage) {
-                this.homePage = nextHomePage;
-            }
-
-            if (
-                this.currentSession?.settings.homePage === nextHomePage ||
-                !this.currentSession
-            ) {
-                return;
-            }
-
-            this.updateSessionSetting({
-                sessionIndex: this.currentSessionIndex,
-                k: "homePage",
-                v: nextHomePage,
-            });
-        },
 
         async checkChromeAvailability() {
             if (this.browserPreference !== "chrome") {
@@ -290,10 +245,6 @@ export default {
             } catch (error) {
                 console.error("Failed to open Chrome download page", error);
             }
-        },
-
-        getRandomUserAgent() {
-            return userAgents[Math.floor(Math.random() * userAgents.length)];
         },
     },
 };
@@ -453,5 +404,11 @@ hr {
 
 .install-chrome-btn {
     margin-left: 8px;
+}
+
+.field-hint {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #999;
 }
 </style>
