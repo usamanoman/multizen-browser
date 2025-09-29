@@ -1,4 +1,4 @@
-export type BrowserPreference = "duckduckgo" | "chrome";
+export type BrowserPreference = "chrome";
 
 export interface ITab {
     id: string;

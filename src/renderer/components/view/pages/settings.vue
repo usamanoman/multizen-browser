@@ -18,9 +18,7 @@
                             v-model="homePage"
                             class="d-block"
                             type="url"
-                            required
-                            @blur="saveHomePage"
-                            @change="saveHomePage"
+                            readonly
                         />
                     </div>
                 </div>
@@ -31,9 +29,8 @@
                         <select
                             v-model="browserPreference"
                             class="browser-select d-block"
-                            @change="saveBrowserPreference"
+                            disabled
                         >
-                            <option value="duckduckgo">DuckDuckGo Browser</option>
                             <option value="chrome">Google Chrome</option>
                         </select>
                         <p
@@ -143,7 +140,7 @@
 <script lang="ts">
 import { mapGetters, mapMutations } from "vuex";
 import userAgents from "@renderer/user-agents/useragents.json";
-import { defaultBrowserPreference } from "@renderer/data/main";
+import { defaultBrowserPreference, defaultHomePage } from "@renderer/data/main";
 
 const defaultUserAgent = window.navigator.userAgent;
 
@@ -176,60 +173,35 @@ export default {
                 }
 
                 this.userAgent = session.settings.userAgent;
-                this.homePage = session.settings.homePage;
+                const enforcedHomePage = defaultHomePage;
+                this.homePage = enforcedHomePage;
 
-                const sessionBrowser =
-                    session.settings.browser || defaultBrowserPreference;
-                this.browserPreference = sessionBrowser;
-
-                if (!session.settings.browser) {
+                if (session.settings.homePage !== enforcedHomePage) {
                     this.updateSessionSetting({
                         sessionIndex: this.currentSessionIndex,
-                        k: "browser",
-                        v: sessionBrowser,
+                        k: "homePage",
+                        v: enforcedHomePage,
                     });
                 }
 
-                if (sessionBrowser === "chrome") {
-                    this.checkChromeAvailability();
-                } else {
-                    this.chromeInstalled = null;
-                    this.checkingChrome = false;
+                const enforcedBrowser = defaultBrowserPreference;
+                this.browserPreference = enforcedBrowser;
+
+                if (session.settings.browser !== enforcedBrowser) {
+                    this.updateSessionSetting({
+                        sessionIndex: this.currentSessionIndex,
+                        k: "browser",
+                        v: enforcedBrowser,
+                    });
                 }
+
+                this.checkChromeAvailability();
             },
         },
     },
 
     methods: {
         ...mapMutations("sessions", ["updateSessionSetting", "removeSession"]),
-
-        saveHomePage() {
-            this.homePage = this.urlify(this.homePage.trim());
-            this.updateSessionSetting({
-                sessionIndex: this.currentSessionIndex,
-                k: "homePage",
-                v: this.homePage,
-            });
-        },
-
-        async saveBrowserPreference() {
-            const preference =
-                this.browserPreference || defaultBrowserPreference;
-            this.browserPreference = preference;
-
-            this.updateSessionSetting({
-                sessionIndex: this.currentSessionIndex,
-                k: "browser",
-                v: preference,
-            });
-
-            if (preference === "chrome") {
-                await this.checkChromeAvailability();
-            } else {
-                this.chromeInstalled = null;
-                this.checkingChrome = false;
-            }
-        },
 
         setDefaultUserAgent() {
             this.userAgent = defaultUserAgent;
@@ -283,10 +255,6 @@ export default {
             } catch (error) {
                 console.error("Failed to open Chrome download page", error);
             }
-        },
-
-        urlify(url) {
-            return url.indexOf("://") === -1 ? "https://" + url : url;
         },
 
         getRandomUserAgent() {

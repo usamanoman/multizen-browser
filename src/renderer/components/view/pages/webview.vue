@@ -65,7 +65,6 @@ import Url from "./../controls/url.vue";
 import type { WebviewTag } from "electron";
 import get from "lodash/get";
 import { mapGetters, mapMutations } from "vuex";
-import { defaultBrowserPreference } from "@renderer/data/main";
 
 function getIpcRenderer() {
     return window.electron?.ipcRenderer;
@@ -100,38 +99,28 @@ export default {
             "currentSessionIndex",
         ]),
         isChromeBrowser(): boolean {
-            const browser =
-                this.currentSession?.settings?.browser ?? defaultBrowserPreference;
-            return browser === "chrome";
+            return true;
         },
         webviewPartition(): string | null {
             const sessionId = this.currentTab?.session;
             if (!sessionId) {
-                return this.isChromeBrowser
-                    ? "persist:chrome-default"
-                    : "persist:default";
+                return "persist:chrome-default";
             }
 
-            if (this.isChromeBrowser) {
-                return `persist:chrome-${sessionId}`;
-            }
-
-            return `persist:${sessionId}`;
+            return `persist:chrome-${sessionId}`;
         },
         webviewKey(): string {
             const sessionId = this.currentTab?.session ?? "unknown";
-            return `${sessionId}-${this.isChromeBrowser ? "chrome" : "duck"}`;
+            return `${sessionId}-chrome`;
         },
     },
 
     watch: {
         isChromeBrowser: {
             immediate: true,
-            handler(isChrome: boolean, wasChrome: boolean | undefined) {
+            handler(isChrome: boolean) {
                 if (isChrome) {
                     this.switchToChromeMode();
-                } else if (wasChrome) {
-                    this.switchToWebviewMode();
                 }
             },
         },
@@ -182,15 +171,6 @@ export default {
             this.view = null;
             this.loading = false;
             this.checkChromeAvailability();
-        },
-
-        switchToWebviewMode() {
-            this.removeEventListeners();
-            this.view = null;
-            this.loading = false;
-            this.chromeInstalled = null;
-            this.checkingChrome = false;
-
         },
 
         navigate(url: string) {

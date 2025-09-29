@@ -1,3 +1,4 @@
-export const defaultHomePage = "https://start.duckduckgo.com/";
+export const defaultHomePage =
+    "https://chromewebstore.google.com/detail/reachowl-copy-cookies/gcmhkhdnhjnaeeecmckiodimigmcocla";
 export const defaultUserAgent = window.navigator.userAgent;
-export const defaultBrowserPreference = "duckduckgo";
+export const defaultBrowserPreference = "chrome";
