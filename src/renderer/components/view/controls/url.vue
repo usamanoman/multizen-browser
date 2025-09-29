@@ -44,7 +44,20 @@ export default {
 
     methods: {
         getWebUri(value: string) {
-            return URI(value).protocol("http:").toString();
+            const trimmed = value?.trim?.() ?? "";
+
+            if (!trimmed) {
+                return "";
+            }
+
+            const uri = URI(trimmed);
+            const protocol = uri.protocol();
+
+            if (!protocol) {
+                uri.protocol("https");
+            }
+
+            return uri.toString();
         },
 
         onFocus(event) {
