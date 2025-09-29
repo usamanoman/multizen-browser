@@ -1,4 +1,4 @@
-import { DEFAULT_CHROME_VERSION, DEFAULT_LANGUAGE } from "../shared/constants";
+import { DEFAULT_CHROME_VERSION, DEFAULT_LANGUAGE } from "../../shared/constants";
 
 export const defaultHomePage = "https://browserscan.net";
 
