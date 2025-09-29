@@ -1,0 +1,6 @@
+2025/09/29-13:02:59.887 6d07 Reusing MANIFEST /Users/usama/Projects/multizen-browser/MultiZen Browser/Partitions/chrome-b2e80a7e-db5e-403f-ad17-59f361981aab/Session Storage/MANIFEST-000001
+2025/09/29-13:02:59.887 6d07 Recovering log #7
+2025/09/29-13:02:59.888 6d07 Reusing old log /Users/usama/Projects/multizen-browser/MultiZen Browser/Partitions/chrome-b2e80a7e-db5e-403f-ad17-59f361981aab/Session Storage/000007.log 
+2025/09/29-13:03:01.581 6503 Level-0 table #11: started
+2025/09/29-13:03:01.595 6503 Level-0 table #11: 166535 bytes OK
+2025/09/29-13:03:01.612 6503 Delete type=0 #7

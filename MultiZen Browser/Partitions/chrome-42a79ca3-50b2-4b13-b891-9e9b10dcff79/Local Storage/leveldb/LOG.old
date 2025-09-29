@@ -1,0 +1,5 @@
+2025/09/29-13:10:27.373 6607 Reusing MANIFEST /Users/usama/Projects/multizen-browser/MultiZen Browser/Partitions/chrome-42a79ca3-50b2-4b13-b891-9e9b10dcff79/Local Storage/leveldb/MANIFEST-000001
+2025/09/29-13:10:27.373 6607 Recovering log #3
+2025/09/29-13:10:27.374 6607 Level-0 table #3: started
+2025/09/29-13:10:27.384 6607 Level-0 table #3: 10970 bytes OK
+2025/09/29-13:10:27.393 6607 Delete type=0 #3
