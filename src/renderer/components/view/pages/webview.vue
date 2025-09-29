@@ -27,12 +27,7 @@
 
         <div v-if="isChromeBrowser" class="chrome-info">
             <p v-if="checkingChrome">Checking for Google Chrome...</p>
-            <p v-else-if="chromeInstalled">
-                Google Chrome detected. Links from this session open in a
-                dedicated Chrome profile, keeping your personal browser data
-                separate.
-            </p>
-            <div v-else>
+            <div v-else-if="chromeInstalled === false">
                 <p>Google Chrome is not installed on this device.</p>
                 <button
                     type="button"
