@@ -63,7 +63,7 @@
 
 <script lang="ts">
 import Url from "./../controls/url.vue";
-import type { WebviewTag } from "electron";
+import type { ContextMenuParams, WebviewTag } from "electron";
 import get from "lodash/get";
 import { mapGetters, mapMutations } from "vuex";
 
@@ -130,7 +130,25 @@ export default {
         },
     },
 
+    mounted() {
+        const ipcRenderer = getIpcRenderer();
+        ipcRenderer?.on("webview:context-open-tab", this.handleContextMenuCommand);
+        ipcRenderer?.on(
+            "webview:chrome-availability",
+            this.handleChromeAvailabilityEvent,
+        );
+    },
+
     beforeUnmount() {
+        const ipcRenderer = getIpcRenderer();
+        ipcRenderer?.removeListener(
+            "webview:context-open-tab",
+            this.handleContextMenuCommand,
+        );
+        ipcRenderer?.removeListener(
+            "webview:chrome-availability",
+            this.handleChromeAvailabilityEvent,
+        );
         this.removeEventListeners();
     },
 
@@ -228,6 +246,7 @@ export default {
             Object.keys(events).forEach((event) =>
                 this.view?.addEventListener(event, this[events[event]]),
             );
+            this.view?.addEventListener("context-menu", this.handleContextMenu);
         },
 
         didStopLoading() {
@@ -288,10 +307,67 @@ export default {
             });
         },
 
+        handleContextMenu(event: Event) {
+            const ipcRenderer = getIpcRenderer();
+            if (!ipcRenderer) {
+                return;
+            }
+
+            const typedEvent = event as Event & {
+                preventDefault?: () => void;
+                params?: ContextMenuParams;
+            };
+
+            typedEvent.preventDefault?.();
+
+            const params = typedEvent.params;
+            if (!params) {
+                return;
+            }
+
+            ipcRenderer.invoke("webview:context-menu", {
+                params,
+                sessionId: this.currentSession?.id ?? null,
+                chromeInstalled: this.chromeInstalled,
+            });
+        },
+
+        handleContextMenuCommand(_event, payload) {
+            if (!payload || payload.sessionId !== (this.currentSession?.id ?? null)) {
+                return;
+            }
+
+            const targetUrl = payload.url;
+
+            if (!targetUrl) {
+                return;
+            }
+
+            this.addTab({
+                sessionIndex: this.currentSessionIndex,
+                url: targetUrl,
+                title: payload.title || targetUrl,
+                activate: payload.activate !== false,
+            });
+        },
+
+        handleChromeAvailabilityEvent(_event, payload) {
+            if (!payload || payload.sessionId !== (this.currentSession?.id ?? null)) {
+                return;
+            }
+
+            if (typeof payload.installed === "boolean") {
+                this.chromeInstalled = payload.installed;
+            }
+
+            this.checkingChrome = false;
+        },
+
         removeEventListeners() {
             Object.keys(events).forEach((event) =>
                 this.view?.removeEventListener(event, this[events[event]]),
             );
+            this.view?.removeEventListener("context-menu", this.handleContextMenu);
         },
     },
 };
