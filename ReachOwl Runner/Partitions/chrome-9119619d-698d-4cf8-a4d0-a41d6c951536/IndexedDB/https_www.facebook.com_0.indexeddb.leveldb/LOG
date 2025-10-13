@@ -1,0 +1,6 @@
+2025/10/13-17:52:03.289 6503 Creating DB /Users/usama/Projects/multizen-browser/ReachOwl Runner/Partitions/chrome-9119619d-698d-4cf8-a4d0-a41d6c951536/IndexedDB/https_www.facebook.com_0.indexeddb.leveldb since it was missing.
+2025/10/13-17:52:03.302 6503 Reusing MANIFEST /Users/usama/Projects/multizen-browser/ReachOwl Runner/Partitions/chrome-9119619d-698d-4cf8-a4d0-a41d6c951536/IndexedDB/https_www.facebook.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/10/13-17:52:05.270 6503 Level-0 table #5: started
+2025/10/13-17:52:05.275 6503 Level-0 table #5: 23160 bytes OK
+2025/10/13-17:52:05.286 6503 Delete type=0 #3
+2025/10/13-17:52:05.286 6503 Manual compaction at level-0 from '\x00\x0b\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x0c\x00\x00\x00' @ 0 : 0; will stop at (end)

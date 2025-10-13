@@ -1,0 +1,5 @@
+2025/10/13-17:50:15.063 6503 Creating DB /Users/usama/Projects/multizen-browser/ReachOwl Runner/Partitions/chrome-9119619d-698d-4cf8-a4d0-a41d6c951536/Local Storage/leveldb since it was missing.
+2025/10/13-17:50:15.105 6503 Reusing MANIFEST /Users/usama/Projects/multizen-browser/ReachOwl Runner/Partitions/chrome-9119619d-698d-4cf8-a4d0-a41d6c951536/Local Storage/leveldb/MANIFEST-000001
+2025/10/13-17:51:46.510 6703 Level-0 table #5: started
+2025/10/13-17:51:46.517 6703 Level-0 table #5: 12086 bytes OK
+2025/10/13-17:51:46.527 6703 Delete type=0 #3
