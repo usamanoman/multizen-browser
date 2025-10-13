@@ -25,7 +25,7 @@ export async function testUrlReachability(url: string): Promise<boolean> {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
         
-        const response = await fetch(url, {
+        await fetch(url, {
             method: 'HEAD',
             mode: 'no-cors',
             signal: controller.signal,

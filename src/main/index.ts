@@ -6,8 +6,6 @@ import env from "./env";
 import TrayMenuBuilder from "./tray";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 import ipcInit from "./ipc/init";
-import { schedulePuppeteerAutomation } from "./puppeteerAutomation";
-import { REMOTE_DEBUGGING_PORT } from "../../puppetteer/automation";
 
 let mainWindow: BrowserWindow | null = null;
 let trayBuilder: TrayMenuBuilder | null = null;
@@ -16,11 +14,6 @@ app.name = env.main.appName;
 app.setPath("userData", join(appDataPath, env.main.appName));
 logger.transports.file.resolvePathFn = () => logsPath;
 logger.errorHandler.startCatching();
-
-app.commandLine.appendSwitch(
-    "remote-debugging-port",
-    String(REMOTE_DEBUGGING_PORT),
-);
 
 const titleVersion = env.main.isDev
     ? "DEVELOPMENT"
@@ -79,10 +72,6 @@ function createWindow(): void {
 
     if (mainWindow) {
         ipcInit(mainWindow);
-    }
-
-    if (mainWindow) {
-        schedulePuppeteerAutomation(mainWindow);
     }
 
     // HMR for renderer base on electron-vite cli.
